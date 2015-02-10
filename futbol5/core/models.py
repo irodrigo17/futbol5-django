@@ -1,13 +1,12 @@
 from django.db import models
+from django.core.validators import validate_email
 
 
 class Player(models.Model):
 
-    name = models.CharField(max_length=50)
-    email = models.CharField(max_length=50)
-
-    # TODO: add matches many-to-many relationship
-    # TODO: validate name and email
+    name = models.CharField(max_length=50, unique=True)
+    email = models.CharField(max_length=50, unique=True, db_index=True, validators=[validate_email])
+    matches = models.ManyToManyField('Match', through='MatchPlayer')
 
     def __str__(self):
         return self.name
@@ -15,11 +14,9 @@ class Player(models.Model):
 
 class Match(models.Model):
 
-    date = models.DateTimeField()
+    date = models.DateTimeField(unique=True, db_index=True)
     place = models.CharField(max_length=50)
-
-    # TODO: add players many-to-many relationship
-    # TODO: validate date and place
+    players = models.ManyToManyField('Player', through='MatchPlayer')
 
     def __str__(self):
         return str(self.date)
@@ -31,7 +28,8 @@ class MatchPlayer(models.Model):
     player = models.ForeignKey(Player)
     join_date = models.DateTimeField(auto_now_add=True)
 
-    # TODO: validate match and player
+    class Meta:
+        unique_together = ['match', 'player']
 
     def __str__(self):
         return str(self.player) + ' joined ' + str(self.match) + ' on ' + str(self.join_date)

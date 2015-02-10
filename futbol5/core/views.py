@@ -24,9 +24,12 @@ def join_match(request, match_id, player_id):
     # TODO: POST to /matchplayers/ to be more RESTful?
     match = get_object_or_404(Match, pk=match_id)
     player = get_object_or_404(Player, pk=player_id)
-    match_player = MatchPlayer(match=match, player=player)
-    match_player.save()
-    # TODO: add success message
+
+    if MatchPlayer.objects.filter(match=match, player=player).exists() == False:
+        match_player = MatchPlayer(match=match, player=player)
+        match_player.save()
+
+    # TODO: add success/error/already-joined messages
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
 
 def leave_match(request, match_id, player_id):
