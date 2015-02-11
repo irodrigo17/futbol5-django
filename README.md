@@ -8,7 +8,8 @@ Based on the [Futbol 5 Rails app](https://github.com/irodrigo17/fulbol5).
 
 ## TODOs
 
-- [ ] Create CRON Job to create matches and send emails.
-- [ ] Create basic match view
-- [ ] Add tests
+- [x] Create basic match view
+- [x] Add tests
+- [ ] Deploy to [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python)
+- [ ] Create CRON Job to create matches and send emails, check [django-crontab](https://github.com/kraiz/django-crontab)
 - [ ] Integrate [TravisCI](https://travis-ci.org/)
