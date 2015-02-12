@@ -20,12 +20,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY'] if 'DJANGO_SECRET_KEY' in os.environ else '!gygr_4^9d=)n3@itlgh60xch4q(=kutn(5)!@bywyx7+c&%a)'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ['DJANGO_DEBUG'] if 'DJANGO_DEBUG' in os.environ else False
+DEBUG = os.environ['DJANGO_DEBUG']
 
-TEMPLATE_DEBUG = DEBUG
+TEMPLATE_DEBUG = os.environ['DJANGO_TEMPLATE_DEBUG']
 
 ALLOWED_HOSTS = []
 
@@ -61,13 +61,9 @@ WSGI_APPLICATION = 'futbol5.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fobal',
-    }
+    'default': dj_database_url.config()
 }
 
-DATABASES['default'] = dj_database_url.config() or DATABASES['default']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
