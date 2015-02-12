@@ -11,6 +11,11 @@ Based on the [Futbol 5 Rails app](https://github.com/irodrigo17/fulbol5).
 - [x] Create basic match view
 - [x] Add tests
 - [x] Deploy to [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python)
-- [ ] Seed DB with players
+- [ ] Seed DB with default players
+- [ ] Fix timezone warning
 - [ ] Create CRON Job to create matches and send emails, check [django-crontab](https://github.com/kraiz/django-crontab)
 - [ ] Integrate [TravisCI](https://travis-ci.org/)
+- [ ] Cancel matches
+- [ ] Invite external friends to a match (not included in future emails by default)
+- [ ] Edit match time and place
+- [ ] Improve UI

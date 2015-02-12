@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 
 from core.models import Player, Match, MatchPlayer
+from core import jobs
 
 # Model tests
 
@@ -219,3 +220,75 @@ class ViewTests(TestCase):
         MatchPlayer.objects.all().delete()
         response = c.get('/matches/%d/join/%d/' % (match.id, player.id))
         self.assertEquals(response.status_code, 302)
+
+
+# Jobs tests
+
+class JobsTests(TestCase):
+
+    def assert_datetime_equals(self, date1, date2, new_day):
+        self.assertEquals(date2.year, date1.year)
+        self.assertEquals(date2.month, date1.month)
+        self.assertEquals(date2.day, new_day)
+        self.assertEquals(date2.hour, date1.hour)
+        self.assertEquals(date2.minute, date1.minute)
+        self.assertEquals(date2.second, date1.second)
+        self.assertEquals(date2.microsecond, date1.microsecond)
+
+
+    def test_next_weekday(self):
+        wed = datetime(2015, 2, 11, 18, 39, 59, 1234)
+
+        next_fri = jobs.next_weekday(wed, 4)
+        self.assert_datetime_equals(wed, next_fri, 13)
+
+        next_wed = jobs.next_weekday(wed, 2)
+        self.assert_datetime_equals(wed, next_wed, 18)
+
+        next_mon = jobs.next_weekday(wed, 0)
+        self.assert_datetime_equals(wed, next_mon, 16)
+
+
+    def test_default_weekdays_and_times(self):
+        weekdays = jobs.default_weekdays_and_times()
+        self.assertEquals(weekdays[0]['weekday'], 2)
+        self.assertEquals(weekdays[0]['hour'], 19)
+        self.assertEquals(weekdays[1]['weekday'], 4)
+        self.assertEquals(weekdays[1]['hour'], 20)
+
+
+    def test_week_dates(self):
+        now = datetime.now()
+        weekdays_and_times = jobs.default_weekdays_and_times()
+
+        week_dates = jobs.week_dates(now, weekdays_and_times)
+
+        self.assertEquals(len(week_dates), len(weekdays_and_times))
+
+        for i in range(len(week_dates)):
+            wd = weekdays_and_times[i]
+            expected_date = jobs.next_weekday(now, wd['weekday'])
+            expected_hour = wd['hour']
+            date = week_dates[i]
+
+            self.assertEquals(date.year, expected_date.year)
+            self.assertEquals(date.month, expected_date.month)
+            self.assertEquals(date.day, expected_date.day)
+            self.assertEquals(date.hour, expected_hour)
+            self.assertEquals(date.minute, 0)
+            self.assertEquals(date.second, 0)
+            self.assertEquals(date.microsecond, 0)
+
+
+    def test_default_place(self):
+        self.assertEquals(jobs.default_place(), 'River')
+
+
+    def test_create_matches(self):
+        expected_dates = jobs.week_dates(datetime.now(), jobs.default_weekdays_and_times())
+        expected_place = jobs.default_place()
+        matches = jobs.create_matches()
+        self.assertEquals(len(matches), len(expected_dates))
+        for i in range(len(matches)):
+            self.assertEquals(matches[i].date, expected_dates[i])
+            self.assertEquals(matches[i].place, expected_place)
