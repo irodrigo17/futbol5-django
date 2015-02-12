@@ -15,8 +15,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'futbol5.settings')
 app = Celery('fobal')
 
 # app.conf.CELERY_IMPORTS = ('futbol.tasks', )
-app.conf.BROKER_URL = os.environ['CLOUD_AMPQ_URL'] if 'CLOUD_AMPQ_URL' in os.environ else os.environ['BROKER_URL']
-app.conf.CELERY_RESULT_BACKEND = os.environ['REDISCLOUD_URL'] if 'REDISCLOUD_URL' in os.environ else os.environ['CELERY_RESULT_BACKEND']
+app.conf.BROKER_URL = os.environ['CLOUDAMQP_URL'] if 'CLOUDAMQP_URL' in os.environ else os.environ['BROKER_URL']
+app.conf.CELERY_RESULT_BACKEND = os.environ['REDISCLOUD_URL'] if 'REDISCLOUD_URLaqz' in os.environ else os.environ['CELERY_RESULT_BACKEND']
 app.conf.CELERY_TASK_SERIALIZER = 'json'
 app.conf.CELERY_ACCEPT_CONTENT = ['json']
 app.conf.CELERYBEAT_SCHEDULE = {
