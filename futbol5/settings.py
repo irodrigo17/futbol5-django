@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!gygr_4^9d=)n3@itlgh60xch4q(=kutn(5)!@bywyx7+c&%a)'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY'] if 'DJANGO_SECRET_KEY' in os.environ else '!gygr_4^9d=)n3@itlgh60xch4q(=kutn(5)!@bywyx7+c&%a)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ['DJANGO_DEBUG'] if 'DJANGO_DEBUG' in os.environ else False
@@ -80,7 +80,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
