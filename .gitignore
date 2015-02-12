@@ -4,3 +4,5 @@ venv/
 *.pyc
 .env
 staticfiles/
+celerybeat-schedule
+dump.rdb

@@ -1,2 +1,2 @@
 web: gunicorn futbol5.wsgi --log-file -
-test: python manage.py test
+celery: celery worker --app=core.tasks.app -B

@@ -63,11 +63,11 @@ WSGI_APPLICATION = 'futbol5.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'futbol5_django',
+        'NAME': 'fobal',
     }
 }
 
-DATABASES['default'] = dj_database_url.config()
+DATABASES['default'] = dj_database_url.config() or DATABASES['default']
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
