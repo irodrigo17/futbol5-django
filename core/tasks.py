@@ -5,7 +5,6 @@ from django.conf import settings
 from celery.schedules import crontab
 
 
-
 ##### celery app setup #####
 
 # set the default Django settings module for the 'celery' program.
@@ -33,7 +32,7 @@ app.conf.CELERYBEAT_SCHEDULE = {
 
 
 from core.models import Player, Match, MatchPlayer
-
+from core import mailer
 
 ##### helper methods #####
 
@@ -46,7 +45,7 @@ def next_weekday(date, weekday):
 
 def default_weekdays_and_times():
     # TODO: store default weekdays and times somewhere else
-    # so they ca be easily changed using django admin
+    # so they can be easily changed using django admin
     return [{'weekday': 2, 'hour': 19}, {'weekday': 4, 'hour': 20}]
 
 
@@ -82,26 +81,11 @@ def create_matches():
     return matches
 
 
-def html_email_body(player, match):
-    return "<html><body><h1>Fobal</h1><p>hey %s, join the match %s</p></body></html>" % (str(player), str(match))
-
-
-def text_email_body(player, match):
-    return "hey %s, join the match %s" % (str(player), str(match))
-
-
-def email_players(players, matches):
-    for player in players:
-        for match in matches:
-            # TODO: implement me
-            print('should send mail to %s to join %s' % (str(player), str(match)))
-
-
-
 ##### celery tasks #####
 
 @app.task
 def check_celery():
+    # TODO: remove this task, only for debugging purposes
     player_count = Player.objects.count()
     match_count = Match.objects.count()
     print('just checking celery is working properly...')
@@ -112,4 +96,4 @@ def check_celery():
 def create_matches_and_email_players():
     matches = create_matches()
     players = Player.objects.all()
-    email_players(players, matches)
+    mailer.send_invite_mails(matches, players)

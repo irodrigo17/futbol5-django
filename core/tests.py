@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 
 from core.models import Player, Match, MatchPlayer
-from core import tasks
+from core import tasks, mailer
 
 # Model tests
 
@@ -224,7 +224,7 @@ class ViewTests(TestCase):
 
 # Tasks tests
 
-class tasksTests(TestCase):
+class TasksTests(TestCase):
 
     def assert_datetime_equals(self, date1, date2, new_day):
         self.assertEquals(date2.year, date1.year)
@@ -292,3 +292,49 @@ class tasksTests(TestCase):
         for i in range(len(matches)):
             self.assertEquals(matches[i].date, expected_dates[i])
             self.assertEquals(matches[i].place, expected_place)
+
+
+
+# Mailer tests
+
+class MailerTests(TestCase):
+
+    def test_text_content(self):
+        match = Match.objects.create(date=datetime.now(), place='Somewhere')
+        player = Player.objects.create(name='John Lennon', email='john@beatles.com')
+        msg = mailer.text_content(match, player)
+        expected_greeting = 'Hola %s' % player.name
+        expected_join_match_path = '/matches/%d/join/%d/' % (match.id, player.id)
+        expected_leave_match_path = '/matches/%d/leave/%d/' % (match.id, player.id)
+        self.assertTrue(expected_greeting in msg)
+        self.assertTrue(expected_join_match_path in msg)
+        self.assertTrue(expected_leave_match_path in msg)
+
+    def test_html_content(self):
+        match = Match.objects.create(date=datetime.now(), place='Somewhere')
+        player = Player.objects.create(name='Paul McCartney', email='paul@beatles.com')
+        msg = mailer.html_content(match, player)
+        expected_greeting = 'Hola %s' % player.name
+        expected_join_match_path = '/matches/%d/join/%d/' % (match.id, player.id)
+        expected_leave_match_path = '/matches/%d/leave/%d/' % (match.id, player.id)
+        self.assertTrue(expected_greeting in msg)
+        self.assertTrue(expected_join_match_path in msg)
+        self.assertTrue(expected_leave_match_path in msg)
+
+    def test_email_address(self):
+        player = Player.objects.create(name='Ringo Starr', email='ringo@beatles.com')
+        address = mailer.email_address(player)
+        self.assertEquals(address, '%s <%s>' % (player.name, player.email))
+
+    def test_email_message(self):
+        player = Player.objects.create(name='George Harrison', email='george@beatles.com')
+        match = Match.objects.create(date=datetime.now(), place='Somewhere')
+        email_message = mailer.email_message(match, player)
+        self.assertEquals(email_message.subject, 'Fobal')
+        self.assertEquals(email_message.body, mailer.text_content(match, player))
+        self.assertEquals(email_message.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(email_message.to, [mailer.email_address(player)])
+
+    def test_sending(self):
+        # TODO: remove this, debug code
+        mailer.test_mail()
