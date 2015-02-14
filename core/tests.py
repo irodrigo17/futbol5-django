@@ -59,6 +59,21 @@ class PlayerTests(TestCase):
         with self.assertRaises(ValidationError):
             p.full_clean()
 
+    def test_top_player(self):
+        p0 = Player.objects.create(name='0 matches', email='0matches@email.com')
+        p1 = Player.objects.create(name='1 matches', email='1matches@email.com')
+        p2 = Player.objects.create(name='2 matches', email='2matches@email.com')
+
+        m0 = Match.objects.create(date=datetime.now(), place='Here')
+        m1 = Match.objects.create(date=datetime.now(), place='Here')
+
+        MatchPlayer.objects.create(player=p1, match=m0)
+        MatchPlayer.objects.create(player=p2, match=m0)
+        MatchPlayer.objects.create(player=p2, match=m1)
+
+        top_player = Player.top_player()
+        self.assertTrue(top_player, p2)
+
 
 class MatchTests(TestCase):
 
@@ -108,6 +123,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['player_count'], Player.objects.count())
         self.assertEquals(response.context['match_count'], Match.objects.count())
+        self.assertEquals(response.context['top_player'], Player.top_player())
         self.assertEquals(len(response.templates), 1)
         self.assertEquals(response.templates[0].name, 'core/index.html')
 

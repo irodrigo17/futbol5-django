@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import validate_email
+from django.db.models import Count
 
 
 class Player(models.Model):
@@ -10,6 +11,10 @@ class Player(models.Model):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def top_player(cls):
+        return Player.objects.annotate(match_count=Count('matches')).order_by('-match_count').first()
 
 
 class Match(models.Model):

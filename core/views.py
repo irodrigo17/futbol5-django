@@ -1,7 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
-
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
 
@@ -11,8 +10,12 @@ from core import mailer, tasks
 def index(request):
     match_count = Match.objects.count()
     player_count = Player.objects.count()
-    # TODO: Add top players, players ranked by number of matches
-    context = {'match_count': match_count, 'player_count': player_count}
+    top_player = Player.top_player()
+    context = {
+        'match_count': match_count,
+        'player_count': player_count,
+        'top_player': top_player,
+    }
     return render(request, 'core/index.html', context)
 
 
