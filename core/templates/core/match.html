@@ -5,4 +5,21 @@
 <h2>Partido</h2>
 <p>Fecha: {{ match.date }}</p>
 <p>Lugar: {{ match.place }}</p>
-<p>Jugadores: TODO :)</p>
+
+<h2>Jugadores:</h2>
+<table>
+  <tr>
+    <th>Número</th>
+    <th>Nombre</th>
+    <th>E-Mail</th>
+    <th>Se anotó</th>
+  </tr>
+  {% for mp in match.matchplayer_set.all %}
+  <tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ mp.player.name }}</td>
+    <td>{{ mp.player.email }}</td>
+    <td>{{ mp.join_date }}</td>
+  </tr>
+  {% endfor %}
+</table>
