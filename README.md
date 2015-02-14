@@ -15,7 +15,7 @@ Using [PostgreSQL](http://www.postgresql.org) as the database backend.
 
 Sending mails with the [default Django SMTP email backend](https://docs.djangoproject.com/en/1.7/topics/email/).
 
-Using [Celery](http://www.celeryproject.org) for running scheduled tasks with [RabbitMQ](https://www.rabbitmq.com) as the broker and [Redis](http://redis.io) as the results backend.
+Can use [Celery](http://www.celeryproject.org) for running scheduled tasks with [RabbitMQ](https://www.rabbitmq.com) as the broker and [Redis](http://redis.io) as the results backend, but it needs a worker dyno running besides de web dyno, and having two dynos is not free on Heroku. So, using the [Temporize Add-On](https://www.temporize.net/) to `GET /sedmail` instead, not as pretty, but it does the trick.
 
 Dependencies can be installed using `pip install`.
 
@@ -45,15 +45,16 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Add tests
 - [x] Deploy to [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python)
 - [x] Fix timezone warning
-- [ ] Fix static files serving on Heroku
-- [ ] Seed DB with default players
-- [ ] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
-- [ ] Integrate [TravisCI](https://travis-ci.org/)
+- [x] Fix static files serving on Heroku
+- [x] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
+- [ ] Format and localize match date in emails and views
 - [ ] Cancel matches (notify players)
 - [ ] Invite external friends to a match (notify players)
 - [ ] Edit match time and place (notify players)
 - [ ] Leave match link (notify players)
 - [ ] Send email notification a day before a match with players list, add optional friend invitations if len(match.players) < 10
 - [ ] Store player first and last names separately, and use only first name in emails
-- [ ] Format and localize match date in emails and views
+- [ ] Integrate [TravisCI](https://travis-ci.org/)
+- [ ] Seed DB with default players
+- [ ] Remove all celery stuff if the temporize add-on works out
 - [ ] Improve UI
