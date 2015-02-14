@@ -3,12 +3,12 @@ Hola {{ player.name }},
 Anótate para el partido del {{ match.date }} en {{ match.place }}
 haciendo click en el link de abajo:
 
-+ Juego! {% url 'core:join_match' match.id player.id %}
++ Juego! {{ join_match_url }}
 
 
 Si en algún momento tienes que bajarte puedes hacerlo siguiendo el link de abajo:
 
-- Me tengo que bajar :( {% url 'core:leave_match' match.id player.id %}
+- Me tengo que bajar :( {{ leave_match_url }}
 
 
 Si no puedes seguir los links, prueba copiar y pegar la URL en tu navegador.

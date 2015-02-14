@@ -103,3 +103,8 @@ EMAIL_PORT = 587
 EMAIL_HOST = os.environ['DJANGO_EMAIL_HOST']
 EMAIL_HOST_USER = os.environ['DJANGO_EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['DJANGO_EMAIL_HOST_PASSWORD']
+
+
+# Base URL
+
+BASE_URL = os.environ['BASE_URL'] if 'BASE_URL' in os.environ else 'http://localhost:5000/'

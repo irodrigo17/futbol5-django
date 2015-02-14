@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from datetime import datetime
+from urlparse import urljoin
 
 from core.models import Player, Match, MatchPlayer
 from core import tasks, mailer
@@ -299,6 +301,38 @@ class TasksTests(TestCase):
 
 class MailerTests(TestCase):
 
+    def test_absolute_url(self):
+        base = settings.BASE_URL
+        relative = 'myrelativeurl'
+        absolute = mailer.absolute_url(relative)
+        self.assertEquals(absolute, urljoin(base, relative))
+
+    def test_join_match_url(self):
+        match = Match(id=1)
+        player = Player(id=2)
+        url = mailer.join_match_url(match, player)
+        self.assertTrue('/matches/1/join/2/' in url)
+        self.assertTrue('://' in url, 'URL should be absolute')
+
+
+    def test_leave_match_url(self):
+        match = Match(id=3)
+        player = Player(id=4)
+        url = mailer.leave_match_url(match, player)
+        self.assertTrue('/matches/3/leave/4/' in url)
+        self.assertTrue('://' in url, 'URL should be absolute')
+
+
+    def test_email_template_context(self):
+        match = Match(id=3)
+        player = Player(id=4)
+        context = mailer.email_template_context(match, player)
+        self.assertEquals(context['match'], match)
+        self.assertEquals(context['player'], player)
+        self.assertEquals(context['join_match_url'], mailer.join_match_url(match, player))
+        self.assertEquals(context['leave_match_url'], mailer.leave_match_url(match, player))
+
+
     def test_text_content(self):
         match = Match.objects.create(date=datetime.now(), place='Somewhere')
         player = Player.objects.create(name='John Lennon', email='john@beatles.com')
@@ -334,7 +368,3 @@ class MailerTests(TestCase):
         self.assertEquals(email_message.body, mailer.text_content(match, player))
         self.assertEquals(email_message.from_email, 'Fobal <noreply@fobal.com>')
         self.assertEquals(email_message.to, [mailer.email_address(player)])
-
-    def test_sending(self):
-        # TODO: remove this, debug code
-        mailer.test_mail()

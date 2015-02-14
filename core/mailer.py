@@ -3,26 +3,45 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
+from django.conf import settings
+from urlparse import urljoin
 from core.models import Player, Match, MatchPlayer
 
 
-def text_content(match, player):
-    template = get_template('core/join_match_email.txt')
-    context = Context({
+def absolute_url(relative_url):
+    return urljoin(settings.BASE_URL, relative_url)
+
+
+def join_match_url(match, player):
+    return absolute_url(reverse('core:join_match', args=[match.id, player.id]))
+
+
+def leave_match_url(match, player):
+    return absolute_url(reverse('core:leave_match', args=[match.id, player.id]))
+
+
+def email_template_context(match, player):
+    return Context({
         'player': player,
         'match': match,
+        'join_match_url': join_match_url(match, player),
+        'leave_match_url': leave_match_url(match, player),
     })
+
+
+def render_content(template_path, match, player):
+    template = get_template(template_path)
+    context = email_template_context(match, player)
     return template.render(context)
+
+
+def text_content(match, player):
+    return render_content('core/join_match_email.txt', match, player)
 
 
 def html_content(match, player):
-    # TODO: DRY template rendering
-    template = get_template('core/join_match_email.html')
-    context = Context({
-        'player': player,
-        'match': match,
-    })
-    return template.render(context)
+    return render_content('core/join_match_email.html', match, player)
 
 
 def email_address(player):
@@ -49,14 +68,3 @@ def send_invite_mails(matches, players):
     for player in players:
         for match in matches:
             send_invite_mail(match, player)
-
-
-def test_mail():
-    # TODO: remove me, only for debugging purposes
-    player = Player()
-    try:
-        player = Player.objects.get(email='irodrigo17@gmail.com')
-    except ObjectDoesNotExist:
-        player = Player.objects.create(name="Ignacio Rodrigo", email='irodrigo17@gmail.com')
-    match = Match.objects.create(date=datetime.now(), place='River')
-    send_invite_mail(match, player)

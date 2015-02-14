@@ -2,29 +2,32 @@
 
 <p>
 Hola {{ player.name }},
-
+<br/>
+<br/>
 Anótate para el partido del {{ match.date }} en {{ match.place }}
 haciendo click en el link de abajo:
-
+<br/>
+<br/>
 <strong>
-  Juego!
-  {% url 'core:join_match' match.id player.id as join_match_url %}
+  Juego! 
   <a href="{{ join_match_url }}">{{ join_match_url }}</a>
 </strong>
-
-
+<br/>
+<br/>
 Si en algún momento tienes que bajarte puedes hacerlo siguiendo el link de abajo,
 tus compañeros serán notificados automáticamente.
-
+<br/>
+<br/>
 <strong>
   Me tengo que bajar :(
-  {% url 'core:leave_match' match.id player.id as leave_match_url %}
   <a href="{{ leave_match_url }}">{{ leave_match_url }}</a>
 </strong>
-
-
+<br/>
+<br/>
 Si no puedes seguir los links, prueba copiar y pegar la URL en tu navegador.
-
+<br/>
+<br/>
 Saludos,
+<br/>
 Fobal
 </p>
