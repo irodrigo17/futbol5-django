@@ -6,4 +6,5 @@ urlpatterns = patterns('',
     url(r'^matches/(?P<match_id>\d+)/$', views.match, name='match'),
     url(r'^matches/(?P<match_id>\d+)/join/(?P<player_id>\d+)/$', views.join_match, name='join_match'),
     url(r'^matches/(?P<match_id>\d+)/leave/(?P<player_id>\d+)/$', views.leave_match, name='leave_match'),
+    url(r'^sendmail/$', views.send_mail, name='send_mail'),
 )

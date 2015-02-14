@@ -45,6 +45,7 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Add tests
 - [x] Deploy to [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python)
 - [x] Fix timezone warning
+- [ ] Fix static files serving on Heroku
 - [ ] Seed DB with default players
 - [ ] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
 - [ ] Integrate [TravisCI](https://travis-ci.org/)
