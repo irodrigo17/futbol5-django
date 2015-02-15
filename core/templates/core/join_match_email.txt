@@ -15,3 +15,7 @@ Si no puedes seguir los links, prueba copiar y pegar la URL en tu navegador.
 
 Saludos,
 Fobal
+
+
+Codigo:
+El código de esta app está en https://github.com/irodrigo17/futbol5-django y toda contribución es bienvenida!
