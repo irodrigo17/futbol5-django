@@ -51,12 +51,10 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
 - [x] Format and localize match date in emails and views
 - [x] Integrate [TravisCI](https://travis-ci.org/)
-- [ ] Add static code analysis
 - [ ] Remove all celery stuff if the temporize add-on works out
 - [ ] Remove debug code from send_mail view
 - [ ] Seed DB with default players
 - [ ] ------------- Go Live! ------------
-- [ ] Switch to python 3
 - [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Improve UI
 - [ ] Delete player / unsuscribe
@@ -65,3 +63,6 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Invite external friends to a match (notify players)
 - [ ] Edit match time and place (notify players)
 - [ ] Send email notification a day before a match with players list, add optional friend invitations if len(match.players) < 10
+- [ ] Switch to python 3
+- [ ] Check test coverage
+- [ ] Add static code analysis
