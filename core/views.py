@@ -54,6 +54,11 @@ def leave_match(request, match_id, player_id):
 
 def send_mail(request):
     # TODO: should be a POST and secured
-    # tasks.create_matches_and_email_players()
-    mailer.send_invite_mails(Match.objects.all(), Player.objects.all()) # just for debugging
+    if 'match' in request.GET and 'player' in request.GET:
+        match = get_object_or_404(Match, pk=match)
+        player = get_object_or_404(Player, pk=player)
+        mailer.send_invite_mail(match, player) # just for debugging
+    else:
+        tasks.create_matches_and_email_players()
+
     return HttpResponse(status=204)

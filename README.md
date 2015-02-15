@@ -50,7 +50,7 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Format and localize match date in emails and views
 - [x] Integrate [TravisCI](https://travis-ci.org/)
 - [x] Remove all celery stuff if the temporize add-on works out
-- [ ] Remove debug code from send_mail view
+- [x] Remove debug code from send_mail view
 - [ ] Seed DB with default players
 - [ ] ------------- Go Live! ------------
 - [ ] Store player first and last names separately, and use only first name in emails
