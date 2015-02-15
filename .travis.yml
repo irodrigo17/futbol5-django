@@ -4,10 +4,9 @@ python:
   - "3.4"
 install:
   - pip install -r requirements.txt
-env:
-  - DJANGO_DEBUG=True
-  - DJANGO_TEMPLATE_DEBUG=True
-  - BASE_URL=http://localhost:5000/
-  - DJANGO_SECRET_KEY=shh!1234
-  - DATABASE_URL=postgres://localhost/fobal
+  - export DJANGO_DEBUG=True
+  - export DJANGO_TEMPLATE_DEBUG=True
+  - export BASE_URL=http://localhost:5000/
+  - export DJANGO_SECRET_KEY=shh!1234
+  - export DATABASE_URL=postgres://localhost/fobal
 script: python manage.py test
