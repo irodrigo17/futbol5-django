@@ -1,4 +1,5 @@
 venv/
+venv3/
 *.DS_Store
 *.sqlite3
 *.pyc

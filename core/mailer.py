@@ -5,7 +5,7 @@ from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from urlparse import urljoin
+from urllib.parse import urljoin
 from core.models import Player, Match, MatchPlayer
 
 

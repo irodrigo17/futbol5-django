@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from core.models import Player, Match, MatchPlayer
 from core import tasks, mailer
