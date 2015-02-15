@@ -1,6 +1,6 @@
 # Futbol 5
 
-[![TravisCI](https://travis-ci.org/irodrigo17/futbol5-django?branch=master)](https://travis-ci.org/irodrigo17/futbol5-django)
+[![TravisCI](https://travis-ci.org/irodrigo17/futbol5-django.svg?branch=master)](https://travis-ci.org/irodrigo17/futbol5-django)
 
 Very basic [Django](https://www.djangoproject.com) app for managing weekly soccer matches.
 
