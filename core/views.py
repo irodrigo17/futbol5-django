@@ -45,11 +45,9 @@ def leave_match(request, match_id, player_id):
     match = get_object_or_404(Match, pk=match_id)
     player = get_object_or_404(Player, pk=player_id)
 
-    if MatchPlayer.objects.filter(match=match, player=player).exists():
-        match_player.delete()
+    MatchPlayer.objects.filter(match=match, player=player).delete()
 
     # TODO: notify players by mail (async)
-
     # TODO: add success/error/not-joined message
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
 

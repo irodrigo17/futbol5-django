@@ -166,6 +166,7 @@ class ViewTests(TestCase):
         self.assertEquals(match_player.match, match)
         self.assertEquals(match_player.player, player)
 
+
     def test_join_match_view_404(self):
         """
         join match view should return 404 if match or player do not exist
