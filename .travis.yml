@@ -8,8 +8,6 @@ install:
   - export BASE_URL=http://localhost:5000/
   - export DJANGO_SECRET_KEY=shh!1234
   - export DATABASE_URL=postgres://localhost/fobal
-  - export BROKER_URL=amqp://
-  - export CELERY_RESULT_BACKEND=redis://localhost
   - export DJANGO_EMAIL_HOST=smtp.gmail.com
   - export DJANGO_EMAIL_HOST_USER=futbol5.dev
   - export DJANGO_EMAIL_HOST_PASSWORD=Fu7b0l5_D3V

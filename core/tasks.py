@@ -1,36 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from celery import Celery
 from django.conf import settings
-from celery.schedules import crontab
-
-
-##### celery app setup #####
-
-# set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'futbol5.settings')
-
-# create celery app
-app = Celery('fobal')
-
-# app.conf.CELERY_IMPORTS = ('futbol.tasks', )
-app.conf.BROKER_URL = os.environ['BROKER_URL']
-app.conf.CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
-app.conf.CELERY_TASK_SERIALIZER = 'json'
-app.conf.CELERY_ACCEPT_CONTENT = ['json']
-app.conf.CELERYBEAT_SCHEDULE = {
-    # Executes every Monday morning at 8:00 A.M
-    'check-celery-every-5-seconds': {
-        'task': 'core.tasks.check_celery',
-        'schedule': timedelta(seconds=5),
-    },
-    'create-matches-and-send-emails-every-monday': {
-        'task': 'core.tasks.create_matches_and_email_players',
-        'schedule': crontab(hour=8, minute=00, day_of_week=1),
-    },
-}
-
-
 from core.models import Player, Match, MatchPlayer
 from core import mailer
 
@@ -81,18 +51,8 @@ def create_matches():
     return matches
 
 
-##### celery tasks #####
+##### actual tasks #####
 
-@app.task
-def check_celery():
-    # TODO: remove this task, only for debugging purposes
-    player_count = Player.objects.count()
-    match_count = Match.objects.count()
-    print('just checking celery is working properly...')
-    print('%d matches and %d players right now' % (match_count, player_count))
-
-
-@app.task
 def create_matches_and_email_players():
     matches = create_matches()
     players = Player.objects.all()
