@@ -1,5 +1,7 @@
 # Futbol 5
 
+[![TravisCI](https://travis-ci.org/irodrigo17/futbol5-django?branch=master)](https://travis-ci.org/irodrigo17/futbol5-django)
+
 Very basic [Django](https://www.djangoproject.com) app for managing weekly soccer matches.
 
 Basically, it just creates matches every week and emails a join link to players.
@@ -47,14 +49,18 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Fix timezone warning
 - [x] Fix static files serving on Heroku
 - [x] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
-- [ ] Format and localize match date in emails and views
+- [x] Format and localize match date in emails and views
+- [ ] Integrate [TravisCI](https://travis-ci.org/)
+- [ ] Add static code analysis
+- [ ] Remove all celery stuff if the temporize add-on works out
+- [ ] Remove debug code from send_mail view
+- [ ] Seed DB with default players
+- [ ] ------------- Go Live! ------------
+- [ ] Store player first and last names separately, and use only first name in emails
+- [ ] Improve UI
+- [ ] Delete player / unsuscribe
+- [ ] Notify players when a player leaves a match
 - [ ] Cancel matches (notify players)
 - [ ] Invite external friends to a match (notify players)
 - [ ] Edit match time and place (notify players)
-- [ ] Leave match link (notify players)
 - [ ] Send email notification a day before a match with players list, add optional friend invitations if len(match.players) < 10
-- [ ] Store player first and last names separately, and use only first name in emails
-- [ ] Integrate [TravisCI](https://travis-ci.org/)
-- [ ] Seed DB with default players
-- [ ] Remove all celery stuff if the temporize add-on works out
-- [ ] Improve UI

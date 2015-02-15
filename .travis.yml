@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+install:
+  - pip install -r requirements.txt
+env:
+  - DJANGO_DEBUG=True
+  - DJANGO_TEMPLATE_DEBUG=True
+  - BASE_URL=http://localhost:5000/
+  - DJANGO_SECRET_KEY=shh!1234
+  - DATABASE_URL=postgres://localhost/fobal
+script: python manage.py test

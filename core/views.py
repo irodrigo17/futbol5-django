@@ -31,7 +31,7 @@ def join_match(request, match_id, player_id):
     match = get_object_or_404(Match, pk=match_id)
     player = get_object_or_404(Player, pk=player_id)
 
-    if MatchPlayer.objects.filter(match=match, player=player).exists() == False:
+    if not MatchPlayer.objects.filter(match=match, player=player).exists():
         match_player = MatchPlayer(match=match, player=player)
         match_player.save()
 
@@ -44,9 +44,11 @@ def leave_match(request, match_id, player_id):
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
     player = get_object_or_404(Player, pk=player_id)
-    match_player = get_object_or_404(MatchPlayer, match=match, player=player)
-    match_player.delete()
-    # TODO: add success message
+
+    if MatchPlayer.objects.filter(match=match, player=player).exists():
+        match_player.delete()
+
+    # TODO: add success/error/not-joined message
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
 
 
