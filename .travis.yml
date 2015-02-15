@@ -3,6 +3,7 @@ python:
   - "2.7"
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
   - export DJANGO_DEBUG=True
   - export DJANGO_TEMPLATE_DEBUG=True
   - export BASE_URL=http://localhost:5000/
@@ -11,4 +12,7 @@ install:
   - export DJANGO_EMAIL_HOST=smtp.gmail.com
   - export DJANGO_EMAIL_HOST_USER=futbol5.dev
   - export DJANGO_EMAIL_HOST_PASSWORD=Fu7b0l5_D3V
-script: python manage.py test
+script:
+  coverage run --source=core manage.py test
+after_success:
+  coveralls
