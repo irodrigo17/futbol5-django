@@ -56,6 +56,7 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Remove debug code from send_mail view
 - [ ] Seed DB with default players
 - [ ] ------------- Go Live! ------------
+- [ ] Switch to python 3
 - [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Improve UI
 - [ ] Delete player / unsuscribe
