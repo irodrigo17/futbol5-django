@@ -1,9 +1,6 @@
-venv/
-venv3/
-*.DS_Store
-*.sqlite3
+venv-py3
+.DS_Store
 *.pyc
 .env
-staticfiles/
-celerybeat-schedule
-dump.rdb
+staticfiles
+__pycache__
