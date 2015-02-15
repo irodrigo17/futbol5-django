@@ -50,7 +50,7 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Fix static files serving on Heroku
 - [x] Create CRON Job to create matches and send emails [django-crontab](https://github.com/kraiz/django-crontab)
 - [x] Format and localize match date in emails and views
-- [ ] Integrate [TravisCI](https://travis-ci.org/)
+- [x] Integrate [TravisCI](https://travis-ci.org/)
 - [ ] Add static code analysis
 - [ ] Remove all celery stuff if the temporize add-on works out
 - [ ] Remove debug code from send_mail view
