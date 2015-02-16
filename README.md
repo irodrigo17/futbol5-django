@@ -64,7 +64,9 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Switch to python 3
 - [x] **Go Live!**
 - [x] Notify players when a player leaves a match
-- [ ] Save stats of players leaving matches.
+- [ ] Add weekday to match date
+- [ ] Setup logging and log important information (match creation, email sending, players joining / leaving)
+- [ ] Save stats of players leaving matches
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)
 - [ ] Invite external friends to a match (notify players)
@@ -73,3 +75,4 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Improve UI
 - [ ] Send email notification the day of the match, include player list and optional friend invitations if len(match.players) < 10
 - [ ] Add static code analysis
+- [ ] Players can perform CRUD operations on matches on the site, maybe voting or some kind of democratic decision making protocol can help
