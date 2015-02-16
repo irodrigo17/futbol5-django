@@ -1,41 +1,20 @@
-<h1>Fobal</h1>
+{% include 'core/partial_email_header.html' %}
 
-<p>
-Hola {{ player.name }},
-<br/>
-<br/>
 Anótate para el partido del {{ match.date }} en {{ match.place }}
-haciendo click en el link de abajo:
 <br/>
 <br/>
 <strong>
-  Juego!
-  <a href="{{ join_match_url }}">{{ join_match_url }}</a>
+  <a href="{{ join_match_url }}">Juego!</a>
 </strong>
 <br/>
 <br/>
-Si en algún momento tienes que bajarte puedes hacerlo siguiendo el link de abajo,
-tus compañeros serán notificados automáticamente.
+Si tenes que bajarte avisale a tus compañeros!
 <br/>
 <br/>
 <strong>
-  Me tengo que bajar :(
-  <a href="{{ leave_match_url }}">{{ leave_match_url }}</a>
+  <a href="{{ leave_match_url }}">Me tengo que bajar :(</a>
 </strong>
 <br/>
 <br/>
-Si no puedes seguir los links, prueba copiar y pegar la URL en tu navegador.
-<br/>
-<br/>
-Saludos,
-<br/>
-Fobal
-</p>
 
-<h2>Codigo</h2>
-<p>El código de esta app está en
-  <a href="https://github.com/irodrigo17/futbol5-django">
-    https://github.com/irodrigo17/futbol5-django
-  </a>
-  , toda contribución es bienvenida!
-</p>
+{% include 'core/partial_email_footer.html' %}

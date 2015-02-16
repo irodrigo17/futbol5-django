@@ -1,11 +1,11 @@
 from datetime import datetime
+from urllib.parse import urljoin
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from urllib.parse import urljoin
 from core.models import Player, Match, MatchPlayer
 
 
@@ -21,44 +21,29 @@ def leave_match_url(match, player):
     return absolute_url(reverse('core:leave_match', args=[match.id, player.id]))
 
 
-def email_template_context(match, player):
-    return Context({
-        'player': player,
-        'match': match,
-        'join_match_url': join_match_url(match, player),
-        'leave_match_url': leave_match_url(match, player),
-    })
-
-
-def render_content(template_path, match, player):
-    template = get_template(template_path)
-    context = email_template_context(match, player)
-    return template.render(context)
-
-
-def text_content(match, player):
-    return render_content('core/join_match_email.txt', match, player)
-
-
-def html_content(match, player):
-    return render_content('core/join_match_email.html', match, player)
+def match_url(match):
+    return absolute_url(reverse('core:match', args=[match.id]))
 
 
 def email_address(player):
     return '%s <%s>' % (player.name, player.email)
 
 
-def email_message(match, player):
-    text = text_content(match, player)
-    html = html_content(match, player)
+def join_match_message(match, player):
+    context = Context({
+        'player': player,
+        'match': match,
+        'join_match_url': join_match_url(match, player),
+        'leave_match_url': leave_match_url(match, player),
+    })
+
+    text = get_template('core/join_match_email.txt').render(context)
+    html = get_template('core/join_match_email.html').render(context)
+
     address = email_address(player)
     msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
     msg.attach_alternative(html, "text/html")
     return msg
-
-
-def send_invite_mail(match, player):
-    email_message(match, player).send()
 
 
 def send_invite_mails(matches, players):
@@ -67,4 +52,31 @@ def send_invite_mails(matches, players):
     """
     for player in players:
         for match in matches:
-            send_invite_mail(match, player)
+            join_match_message(match, player).send()
+
+
+def leave_match_message(match, player, leaving_player):
+    context = Context({
+        'player': player,
+        'leaving_player': leaving_player,
+        'match': match,
+        'match_url': match_url(match),
+    })
+
+    text = get_template('core/leave_match_email.txt').render(context)
+    html = get_template('core/leave_match_email.html').render(context)
+
+    address = email_address(player)
+    msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
+    msg.attach_alternative(html, "text/html")
+    return msg
+
+
+def send_leave_mails(match, leaving_player):
+    """
+    Send email notifications to all players in the given match to inform that
+    the given leaving_player is not playing.
+    leaving_player should have been removing from match.players already.
+    """
+    for player in match.players.all():
+        leave_match_message(match, player, leaving_player).send()

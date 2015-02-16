@@ -1,9 +1,11 @@
+import logging
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
 
+logger = logging.getLogger(__name__)
 
 # TODO: use generic views?
 
@@ -45,9 +47,12 @@ def leave_match(request, match_id, player_id):
     match = get_object_or_404(Match, pk=match_id)
     player = get_object_or_404(Player, pk=player_id)
 
-    MatchPlayer.objects.filter(match=match, player=player).delete()
+    mp = match.matchplayer_set.filter(player=player)
+    if len(mp) > 0:
+        mp.delete()
+        # TODO: send emails asyncronously
+        mailer.send_leave_mails(match, player)
 
-    # TODO: notify players by mail (async)
     # TODO: add success/error/not-joined message
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
 
@@ -57,7 +62,8 @@ def send_mail(request):
     if 'match' in request.GET and 'player' in request.GET:
         match = get_object_or_404(Match, pk=request.GET['match'])
         player = get_object_or_404(Player, pk=request.GET['player'])
-        mailer.send_invite_mail(match, player) # just for debugging
+        mailer.join_match_message(match, player).send() # just for debugging
+        logger.info('sending manual invite email to %s', player.email)
     else:
         tasks.create_matches_and_email_players()
 

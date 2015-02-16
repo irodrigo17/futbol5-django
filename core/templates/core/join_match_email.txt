@@ -1,21 +1,12 @@
-Hola {{ player.name }},
+{% include 'core/partial_email_header.txt' %}
 
 Anótate para el partido del {{ match.date }} en {{ match.place }}
-haciendo click en el link de abajo:
 
 + Juego! {{ join_match_url }}
 
 
-Si en algún momento tienes que bajarte puedes hacerlo siguiendo el link de abajo:
+Si tenes que bajarte avisale a tus compañeros!
 
 - Me tengo que bajar :( {{ leave_match_url }}
 
-
-Si no puedes seguir los links, prueba copiar y pegar la URL en tu navegador.
-
-Saludos,
-Fobal
-
-
-Codigo:
-El código de esta app está en https://github.com/irodrigo17/futbol5-django y toda contribución es bienvenida!
+{% include 'core/partial_email_footer.txt' %}

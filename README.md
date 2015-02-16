@@ -63,9 +63,10 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Check test coverage
 - [x] Switch to python 3
 - [x] **Go Live!**
-- [ ] Notify players when a player leaves a match
-- [ ] Cancel matches (notify players)
-- [ ] Delete player / unsuscribe
+- [x] Notify players when a player leaves a match
+- [ ] Save stats of players leaving matches.
+- [ ] Cancel matches (notify players and save stats)
+- [ ] Delete player / unsuscribe (save stats)
 - [ ] Invite external friends to a match (notify players)
 - [ ] Edit match time and place (notify players)
 - [ ] Store player first and last names separately, and use only first name in emails

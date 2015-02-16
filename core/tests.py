@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 from datetime import datetime
 from urllib.parse import urljoin
+from django.core import mail
 
 from core.models import Player, Match, MatchPlayer
 from core import tasks, mailer
@@ -114,6 +115,7 @@ class ViewTests(TestCase):
         player = Player.objects.create(name='Test Player', email='test@player.com')
         match = Match.objects.create(date=datetime.now(), place='Test Stadium')
 
+
     def test_index_view(self):
         """
         index view should be rendered with the proper context and template
@@ -124,8 +126,9 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['player_count'], Player.objects.count())
         self.assertEquals(response.context['match_count'], Match.objects.count())
         self.assertEquals(response.context['top_player'], Player.top_player())
-        self.assertEquals(len(response.templates), 1)
+        self.assertEquals(len(response.templates), 3)
         self.assertEquals(response.templates[0].name, 'core/index.html')
+
 
     def test_match_view(self):
         """
@@ -136,8 +139,9 @@ class ViewTests(TestCase):
         response = c.get('/matches/%d/' % match.id)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
-        self.assertEquals(len(response.templates), 1)
+        self.assertEquals(len(response.templates), 3)
         self.assertEquals(response.templates[0].name, 'core/match.html')
+
 
     def test_match_view_404(self):
         """
@@ -146,6 +150,7 @@ class ViewTests(TestCase):
         c = Client()
         response = c.get('/matches/1234/')
         self.assertEquals(response.status_code, 404)
+
 
     def test_join_match_view(self):
         """
@@ -159,7 +164,7 @@ class ViewTests(TestCase):
 
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
-        self.assertEquals(len(response.templates), 1)
+        self.assertEquals(len(response.templates), 3)
         self.assertEquals(response.templates[0].name, 'core/match.html')
 
         match_player = MatchPlayer.objects.get(match=match, player=player)
@@ -180,6 +185,7 @@ class ViewTests(TestCase):
 
         response = c.get('/matches/1234/join/%d/' % player.id)
         self.assertEquals(response.status_code, 404)
+
 
     def test_join_match_view_duplicate(self):
         """
@@ -204,23 +210,35 @@ class ViewTests(TestCase):
         self.assertEquals(match_player.match, match)
         self.assertEquals(match_player.player, player)
 
+
     def test_leave_match_view(self):
         """
         leave match view should redirect to match view and delete the proper MatchPlayer
         """
-        match = Match.objects.first()
-        player = Player.objects.first()
-        match_player = MatchPlayer.objects.create(match=match, player=player)
+        match = Match.objects.create(date=datetime.now(), place='Here')
+        player1 = Player.objects.create(name='Leave Match 1', email='leavematch1@email.com')
+        player2 = Player.objects.create(name='Leave Match 2', email='leavematch2@email.com')
+        mp1 = MatchPlayer.objects.create(match=match, player=player1)
+        mp2 = MatchPlayer.objects.create(match=match, player=player2)
+
+        self.assertEquals(match.players.count(), 2)
 
         c = Client()
-        response = c.get('/matches/%d/leave/%d/' % (match.id, player.id), follow=True)
+        response = c.get('/matches/%d/leave/%d/' % (match.id, player2.id), follow=True)
 
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
-        self.assertEquals(len(response.templates), 1)
-        self.assertEquals(response.templates[0].name, 'core/match.html')
+        self.assertEquals(len(response.templates), 3)
+        self.assertEquals(len(mail.outbox), 1, 'Should send an email to the remaining player')
+        self.assertFalse(MatchPlayer.objects.filter(match=match, player=player2).exists())
+        self.assertTrue(MatchPlayer.objects.filter(match=match, player=player1).exists())
 
-        self.assertFalse(MatchPlayer.objects.filter(match=match, player=player).exists())
+        mail.outbox = []
+        response = c.get('/matches/%d/leave/%d/' % (match.id, player2.id), follow=True)
+
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(mail.outbox), 0, "Shouldn't send any email if player was not in the match")
+
 
     def test_leave_match_view_404(self):
         """
@@ -239,6 +257,30 @@ class ViewTests(TestCase):
         MatchPlayer.objects.all().delete()
         response = c.get('/matches/%d/join/%d/' % (match.id, player.id))
         self.assertEquals(response.status_code, 302)
+
+
+    def test_send_mail_view(self):
+        c = Client()
+        response = c.get('/sendmail/?match=1&player=2')
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(mail.outbox), 1, "Should send one email")
+        self.assertTrue('/matches/1/join/2/' in mail.outbox[0].body)
+        self.assertTrue('/matches/1/leave/2/' in mail.outbox[0].body)
+
+
+    def test_send_mail_view(self):
+        prev_matches = Match.objects.count()
+
+        c = Client()
+        response = c.get('/sendmail/')
+
+        matches = Match.objects.count()
+        self.assertTrue(matches > prev_matches)
+
+        expected_emails = (matches - prev_matches) * Player.objects.count()
+        self.assertEquals(response.status_code, 204)
+        self.assertEquals(len(mail.outbox), expected_emails, "Should send one email per match per player")
+
 
 
 # Tasks tests
@@ -340,48 +382,27 @@ class MailerTests(TestCase):
         self.assertTrue('://' in url, 'URL should be absolute')
 
 
-    def test_email_template_context(self):
-        match = Match(id=3)
-        player = Player(id=4)
-        context = mailer.email_template_context(match, player)
-        self.assertEquals(context['match'], match)
-        self.assertEquals(context['player'], player)
-        self.assertEquals(context['join_match_url'], mailer.join_match_url(match, player))
-        self.assertEquals(context['leave_match_url'], mailer.leave_match_url(match, player))
+    def test_match_url(self):
+        match = Match(id=5)
+        url = mailer.match_url(match)
+        self.assertTrue('/matches/5/' in url)
+        self.assertTrue('://' in url, 'URL should be absolute')
 
-
-    def test_text_content(self):
-        match = Match.objects.create(date=datetime.now(), place='Somewhere')
-        player = Player.objects.create(name='John Lennon', email='john@beatles.com')
-        msg = mailer.text_content(match, player)
-        expected_greeting = 'Hola %s' % player.name
-        expected_join_match_path = '/matches/%d/join/%d/' % (match.id, player.id)
-        expected_leave_match_path = '/matches/%d/leave/%d/' % (match.id, player.id)
-        self.assertTrue(expected_greeting in msg)
-        self.assertTrue(expected_join_match_path in msg)
-        self.assertTrue(expected_leave_match_path in msg)
-
-    def test_html_content(self):
-        match = Match.objects.create(date=datetime.now(), place='Somewhere')
-        player = Player.objects.create(name='Paul McCartney', email='paul@beatles.com')
-        msg = mailer.html_content(match, player)
-        expected_greeting = 'Hola %s' % player.name
-        expected_join_match_path = '/matches/%d/join/%d/' % (match.id, player.id)
-        expected_leave_match_path = '/matches/%d/leave/%d/' % (match.id, player.id)
-        self.assertTrue(expected_greeting in msg)
-        self.assertTrue(expected_join_match_path in msg)
-        self.assertTrue(expected_leave_match_path in msg)
 
     def test_email_address(self):
         player = Player.objects.create(name='Ringo Starr', email='ringo@beatles.com')
         address = mailer.email_address(player)
         self.assertEquals(address, '%s <%s>' % (player.name, player.email))
 
-    def test_email_message(self):
+
+    def test_join_match_message(self):
         player = Player.objects.create(name='George Harrison', email='george@beatles.com')
         match = Match.objects.create(date=datetime.now(), place='Somewhere')
-        email_message = mailer.email_message(match, player)
-        self.assertEquals(email_message.subject, 'Fobal')
-        self.assertEquals(email_message.body, mailer.text_content(match, player))
-        self.assertEquals(email_message.from_email, 'Fobal <noreply@fobal.com>')
-        self.assertEquals(email_message.to, [mailer.email_address(player)])
+        msg = mailer.join_match_message(match, player)
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(player)])
+        self.assertTrue('Hola %s' % player.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(mailer.join_match_url(match, player) in msg.body)
+        self.assertTrue(mailer.leave_match_url(match, player) in msg.body)

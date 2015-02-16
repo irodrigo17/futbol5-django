@@ -1,0 +1,1 @@
+Hola {{ player.name }},
