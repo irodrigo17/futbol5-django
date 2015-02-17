@@ -66,7 +66,7 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Notify players when a player leaves a match
 - [x] Notify players when a player joins a match
 - [x] Add weekday to match date
-- [ ] Setup logging and log important information (match creation, email sending, players joining / leaving)
+- [x] Setup logging and log important information (match creation, email sending, players joining / leaving)
 - [ ] Invite external friends to a match (notify players)
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)

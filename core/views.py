@@ -34,8 +34,8 @@ def join_match(request, match_id, player_id):
     if not MatchPlayer.objects.filter(match=match, player=player).exists():
         match_player = MatchPlayer(match=match, player=player)
         match_player.save()
-        mailer.send_join_mails(match, player)
-
+        sent_mails = mailer.send_join_mails(match, player)
+        logger.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
 
     # TODO: add success/error/already-joined messages
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
@@ -51,7 +51,8 @@ def leave_match(request, match_id, player_id):
     if len(mp) > 0:
         mp.delete()
         # TODO: send emails asyncronously
-        mailer.send_leave_mails(match, player)
+        sent_mails = mailer.send_leave_mails(match, player)
+        logger.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
 
     # TODO: add success/error/not-joined message
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
@@ -65,8 +66,9 @@ def send_mail(request):
         player = get_object_or_404(Player, pk=request.GET['player'])
         mailer.invite_message(match, player).send() # just for debugging
         sent_emails = 1
-        logger.info('sending manual invite email to %s', player.email)
+        logger.info('Sending manual invite email for %s to join %s' % (player, match))
     else:
         sent_emails = tasks.create_matches_and_email_players()
+        logger.info('Created week matches and sent %i join email(s)' % (sent_emails))
 
     return HttpResponse('Emails sent: %i' % sent_emails)
