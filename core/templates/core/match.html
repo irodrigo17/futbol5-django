@@ -4,21 +4,59 @@
 <p>Se juega el <strong>{{ match.date | date:"MATCH_DATE_FORMAT" }}</strong> en <strong>{{ match.place }}</strong></p>
 
 <h2>El plantel</h2>
-<table>
-  <tr>
-    <th>Número</th>
-    <th>Nombre</th>
-    <th>Emilio</th>
-    <th>Fecha</th>
-  </tr>
-  {% for mp in match.matchplayer_set.all %}
-  <tr>
-    <td>{{ forloop.counter }}</td>
-    <td>{{ mp.player.name }}</td>
-    <td>{{ mp.player.email }}</td>
-    <td>{{ mp.join_date }}</td>
-  </tr>
-  {% endfor %}
-</table>
+{% if match.players.count > 0 %}
+  <table>
+    <tr>
+      <th>Número</th>
+      <th>Nombre</th>
+      <th>Emilio</th>
+      <th>Fecha</th>
+    </tr>
+    {% for mp in match.matchplayer_set.all %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ mp.player.name }}</td>
+      <td>{{ mp.player.email }}</td>
+      <td>{{ mp.join_date }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>Todavía no se ha anotado nadie...</p>
+{% endif %}
+
+<h3>Invitados</h3>
+{% if match.guests.count > 0 %}
+  <table>
+    <tr>
+      <th>Número</th>
+      <th>Nombre</th>
+      <th>Amigo de</th>
+      <th>Fecha</th>
+    </tr>
+    {% for guest in match.guests.all %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ guest.name }}</td>
+      <td>{{ guest.inviting_player.name }}</td>
+      <td>{{ guest.inviting_date }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>Todavía no hay invitados...</p>
+{% endif %}
+
+{% if player != None %}
+  <form action="addguest/" method="post">
+    {% csrf_token %}
+    <p>
+      <label for="guest_name_id">Invita a un amigo {{ player.name }}</label>
+      <input id="guest_name_id" type="text" name="guest" maxlength="50" placeholder="Nombre"/>
+      <input type="hidden" name="inviting_player" maxlength="50" value="{{ player.id }}" />
+      <input type="submit" value="Invitar" />
+    </p>
+  </form>
+{% endif %}
 
 {% include 'core/partial_site_footer.html' %}

@@ -1,9 +1,9 @@
 import logging
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
-from django.core.urlresolvers import reverse
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
+from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +22,10 @@ def index(request):
 def match(request, match_id):
     match = get_object_or_404(Match, pk=match_id)
     context = {'match': match}
+
+    if 'player' in request.GET:
+        context['player'] = get_object_or_404(Player, pk=request.GET['player'])
+
     return render(request, 'core/match.html', context)
 
 
@@ -37,8 +41,8 @@ def join_match(request, match_id, player_id):
         sent_mails = mailer.send_join_mails(match, player)
         logger.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
 
-    # TODO: add success/error/already-joined messages
-    return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
+    # TODO: add success/error/already-joined messages and player id
+    return HttpResponseRedirect(match_url(match, player))
 
 
 def leave_match(request, match_id, player_id):
@@ -54,8 +58,22 @@ def leave_match(request, match_id, player_id):
         sent_mails = mailer.send_leave_mails(match, player)
         logger.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
 
-    # TODO: add success/error/not-joined message
-    return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
+    # TODO: add success/error/not-joined message and player id
+    return HttpResponseRedirect(match_url(match, player))
+
+
+def add_guest(request, match_id):
+    # TODO: should probably be a POST to /guests/ to be more RESTful
+    match = get_object_or_404(Match, pk=match_id)
+    player = get_object_or_404(Player, pk=request.POST['inviting_player'])
+
+    guest = match.guests.create(inviting_player=player, name=request.POST['guest'])
+    # TODO: send emails asyncronously
+    sent_mails = mailer.send_invite_guest_mails(match, player, guest)
+    logger.info('%s invited %s to %s, sent %i email(s)' % (player, guest, match, sent_mails))
+
+    # TODO: add success/error/not-joined message and player id
+    return HttpResponseRedirect(match_url(match, player))
 
 
 def send_mail(request):

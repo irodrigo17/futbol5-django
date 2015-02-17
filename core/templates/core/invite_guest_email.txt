@@ -1,0 +1,7 @@
+{% include 'core/partial_email_header.txt' %}
+
+{{ guest.inviting_player.name }} invitó a {{ guest.name }} para el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}.
+
+Acá está la lista actualizada de jugadores ({{ match.players.count }} + {{ match.guests.count }}): {{ match_url }}
+
+{% include 'core/partial_email_footer.txt' %}

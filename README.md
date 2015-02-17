@@ -67,13 +67,16 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Notify players when a player joins a match
 - [x] Add weekday to match date
 - [x] Setup logging and log important information (match creation, email sending, players joining / leaving)
-- [ ] Invite external friends to a match (notify players)
+- [x] Invite external friends to a match (notify players)
+- [ ] Delete invited friends (notify players)
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)
 - [ ] Send email notification the day of the match, include player list and optional friend invitations if len(match.players) < 10
+- [ ] Make URLs more RESTful
 - [ ] Improve UI
 - [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Edit match time and place (notify players)
 - [ ] Save stats of players leaving matches
 - [ ] Add static code analysis
 - [ ] Players can perform CRUD operations on matches on the site, maybe voting or some kind of democratic decision making protocol can help
+- [ ] Create a RESTful API and use a frontend JavaScript framework for the UI

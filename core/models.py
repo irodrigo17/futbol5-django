@@ -42,4 +42,18 @@ class MatchPlayer(models.Model):
         unique_together = ['match', 'player']
 
     def __str__(self):
-        return str(self.player) + ' joined ' + str(self.match) + ' on ' + str(self.join_date)
+        return '%s joined %s on %s' % (self.player, self.match, self.join_date)
+
+
+class Guest(models.Model):
+
+    name = models.CharField(max_length=50)
+    match = models.ForeignKey(Match, related_name='guests')
+    inviting_player = models.ForeignKey(Player)
+    inviting_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['match', 'inviting_player', 'name']
+
+    def __str__(self):
+        return self.name

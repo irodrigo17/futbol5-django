@@ -1,0 +1,11 @@
+{% include 'core/partial_email_header.html' %}
+
+<p>
+  {{ guest.inviting_player.name }} invitó a {{ guest.name }} para el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+</p>
+<br/>
+<p>
+  Acá está la <a href="{{ match_url }}">lista actualizada</a> de jugadores ({{ match.players.count }} + {{ match.guests.count }})
+</p>
+
+{% include 'core/partial_email_footer.html' %}
