@@ -10,13 +10,11 @@ logger = logging.getLogger(__name__)
 # TODO: use generic views?
 
 def index(request):
-    match_count = Match.objects.count()
-    player_count = Player.objects.count()
-    top_player = Player.top_player()
     context = {
-        'match_count': match_count,
-        'player_count': player_count,
-        'top_player': top_player,
+        'match_count': Match.objects.count(),
+        'player_count': Player.objects.count(),
+        'top_player': Player.top_player(),
+        'next_match': Match.next_match(),
     }
     return render(request, 'core/index.html', context)
 

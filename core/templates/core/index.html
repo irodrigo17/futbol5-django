@@ -4,6 +4,21 @@
 <!-- # TODO: add links -->
 <p>{{ match_count }} partidos organizados</p>
 <p>{{ player_count }} jugadores en la lista</p>
-<p>Jugador con mas partidos: {{ top_player.name }} ({{ top_player.match_count }})</p>
+<p>
+  Jugador con mas partidos:
+  {% if top_player != None %}
+    {{ top_player.name }} ({{ top_player.match_count }})
+  {% else %}
+    -
+  {% endif %}
+</p>
+<p>
+  Proximo partido:
+  {% if next_match != None %}
+    <a href="{% url 'core:match' next_match.id %}">{{ next_match.date | date:"MATCH_DATE_FORMAT" }}</a>
+  {% else %}
+    -
+  {% endif %}
+</p>
 
 {% include 'core/partial_site_footer.html' %}

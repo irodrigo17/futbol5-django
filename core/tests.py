@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import urljoin
 from django.core import mail
 
@@ -106,15 +106,20 @@ class MatchTests(TestCase):
         with self.assertRaises(ValidationError):
             m.full_clean()
 
+    def test_next_match(self):
+        """
+        next match should return the next updcoming match
+        """
+        m1 = Match.objects.create(date=datetime.now() - timedelta(days=1), place='Here')
+        m2 = Match.objects.create(date=datetime.now() + timedelta(days=1), place='There')
+        m3 = Match.objects.create(date=datetime.now() + timedelta(days=2), place='Everywhere')
+        next_match = Match.next_match()
+        self.assertTrue(next_match == m2)
+
 
 # View tests
 
 class ViewTests(TestCase):
-
-    def setUp(self):
-        player = Player.objects.create(name='Test Player', email='test@player.com')
-        match = Match.objects.create(date=datetime.now(), place='Test Stadium')
-
 
     def test_index_view(self):
         """
@@ -126,8 +131,19 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['player_count'], Player.objects.count())
         self.assertEquals(response.context['match_count'], Match.objects.count())
         self.assertEquals(response.context['top_player'], Player.top_player())
+        self.assertEquals(response.context['next_match'], Match.next_match())
         self.assertEquals(len(response.templates), 3)
         self.assertEquals(response.templates[0].name, 'core/index.html')
+
+        Match.objects.create(date=datetime.now() + timedelta(days=1), place='River')
+        Player.objects.create(name="Johan Sebastian Mastropiero", email='js@mastropiero.com')
+
+        response = c.get('/')
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.context['player_count'], Player.objects.count())
+        self.assertEquals(response.context['match_count'], Match.objects.count())
+        self.assertEquals(response.context['top_player'], Player.top_player())
+        self.assertEquals(response.context['next_match'], Match.next_match())
 
 
     def test_match_view(self):
@@ -135,7 +151,7 @@ class ViewTests(TestCase):
         match view should be rendered with the proper context and template
         """
         c = Client()
-        match = Match.objects.first()
+        match = Match.objects.create(date=datetime.now(), place="La Cancha")
         response = c.get('/matches/%d/' % match.id)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
@@ -156,8 +172,8 @@ class ViewTests(TestCase):
         """
         join match view should redirect to match view and create the proper MatchPlayer
         """
-        match = Match.objects.first()
-        player = Player.objects.first()
+        match = Match.objects.create(date=datetime.now(), place="Centenario")
+        player = Player.objects.create(name="Join Match View", email="join@match.com")
 
         c = Client()
         response = c.get('/matches/%d/join/%d/' % (match.id, player.id), follow=True)
@@ -176,8 +192,8 @@ class ViewTests(TestCase):
         """
         join match view should return 404 if match or player do not exist
         """
-        match = Match.objects.first()
-        player = Player.objects.first()
+        match = Match.objects.create(date=datetime.now(), place="Centenario")
+        player = Player.objects.create(name="Join Match View 404", email="join404@match.com")
 
         c = Client()
         response = c.get('/matches/%d/join/1234/' % match.id)
@@ -192,8 +208,8 @@ class ViewTests(TestCase):
         join match view should redirect to match view without creating any
         MatchPlayer if it already exists, and set a proper message in the context
         """
-        match = Match.objects.first()
-        player = Player.objects.first()
+        match = Match.objects.create(date=datetime.now(), place="Centenario")
+        player = Player.objects.create(name="Join Match View Duplicate", email="join@dup.com")
 
         c = Client()
         response = c.get('/matches/%d/join/%d/' % (match.id, player.id), follow=True)
@@ -244,8 +260,8 @@ class ViewTests(TestCase):
         """
         join match view should return 404 if match or player do not exist
         """
-        match = Match.objects.first()
-        player = Player.objects.first()
+        match = Match.objects.create(date=datetime.now(), place="Centenario")
+        player = Player.objects.create(name="Leave Match 404", email="leave404@match.com")
 
         c = Client()
         response = c.get('/matches/%d/leave/1234/' % match.id)

@@ -1,7 +1,7 @@
 {% include 'core/partial_email_header.html' %}
 
 <p>
-  {{ joining_player.name }} juega en el partido del {{ match.date }} en {{ match.place }}
+  {{ joining_player.name }} juega en el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
 </p>
 <br/>
 <p>

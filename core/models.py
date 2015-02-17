@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.core.validators import validate_email
 from django.db.models import Count
@@ -25,6 +26,10 @@ class Match(models.Model):
 
     def __str__(self):
         return str(self.date)
+
+    @classmethod
+    def next_match(cls):
+        return Match.objects.filter(date__gte=datetime.now()).order_by('date').first()
 
 
 class MatchPlayer(models.Model):

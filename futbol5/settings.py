@@ -108,3 +108,8 @@ EMAIL_HOST_PASSWORD = os.environ['DJANGO_EMAIL_HOST_PASSWORD']
 # Base URL
 
 BASE_URL = os.environ['BASE_URL'] if 'BASE_URL' in os.environ else 'http://localhost:5000/'
+
+
+# Date formats
+
+MATCH_DATE_FORMAT = "l j \d\e F \\a \l\\a\s H:i"

@@ -1,6 +1,6 @@
 {% include 'core/partial_email_header.txt' %}
 
-{{ leaving_player.name }} se bajó del partido del {{ match.date }} en {{ match.place }}.
+{{ leaving_player.name }} se bajó del partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}.
 
 Acá está la lista actualizada: {{ match_url }}
 
