@@ -1,0 +1,12 @@
+{% include 'core/partial_email_header.txt' %}
+
+Anótate para el partido del {{ match.date }} en {{ match.place }}
+
++ Juego! {{ join_match_url }}
+
+
+Si tienes que bajarte avísale a tus compañeros!
+
+- Me tengo que bajar :( {{ leave_match_url }}
+
+{% include 'core/partial_email_footer.txt' %}

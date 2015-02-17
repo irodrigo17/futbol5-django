@@ -1,20 +1,11 @@
 {% include 'core/partial_email_header.html' %}
 
-Anótate para el partido del {{ match.date }} en {{ match.place }}
+<p>
+  {{ joining_player.name }} juega en el partido del {{ match.date }} en {{ match.place }}
+</p>
 <br/>
-<br/>
-<strong>
-  <a href="{{ join_match_url }}">Juego!</a>
-</strong>
-<br/>
-<br/>
-Si tenes que bajarte avisale a tus compañeros!
-<br/>
-<br/>
-<strong>
-  <a href="{{ leave_match_url }}">Me tengo que bajar :(</a>
-</strong>
-<br/>
-<br/>
+<p>
+  Acá está la <a href="{{ match_url }}">lista actualizada</a> de jugadores ({{ match.players.count }})
+</p>
 
 {% include 'core/partial_email_footer.html' %}

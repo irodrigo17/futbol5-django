@@ -36,6 +36,8 @@ def join_match(request, match_id, player_id):
     if not MatchPlayer.objects.filter(match=match, player=player).exists():
         match_player = MatchPlayer(match=match, player=player)
         match_player.save()
+        mailer.send_join_mails(match, player)
+
 
     # TODO: add success/error/already-joined messages
     return HttpResponseRedirect(reverse('core:match', args=(match.id,)))
@@ -59,12 +61,14 @@ def leave_match(request, match_id, player_id):
 
 def send_mail(request):
     # TODO: should be a POST and secured
+    sent_emails = 0
     if 'match' in request.GET and 'player' in request.GET:
         match = get_object_or_404(Match, pk=request.GET['match'])
         player = get_object_or_404(Player, pk=request.GET['player'])
-        mailer.join_match_message(match, player).send() # just for debugging
+        mailer.invite_message(match, player).send() # just for debugging
+        sent_emails = 1
         logger.info('sending manual invite email to %s', player.email)
     else:
-        tasks.create_matches_and_email_players()
+        sent_emails = tasks.create_matches_and_email_players()
 
-    return HttpResponse(status=204)
+    return HttpResponse('Emails sent: %i' % sent_emails)

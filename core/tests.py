@@ -278,7 +278,7 @@ class ViewTests(TestCase):
         self.assertTrue(matches > prev_matches)
 
         expected_emails = (matches - prev_matches) * Player.objects.count()
-        self.assertEquals(response.status_code, 204)
+        self.assertEquals(response.status_code, 200)
         self.assertEquals(len(mail.outbox), expected_emails, "Should send one email per match per player")
 
 
@@ -395,10 +395,10 @@ class MailerTests(TestCase):
         self.assertEquals(address, '%s <%s>' % (player.name, player.email))
 
 
-    def test_join_match_message(self):
+    def test_invite_message(self):
         player = Player.objects.create(name='George Harrison', email='george@beatles.com')
         match = Match.objects.create(date=datetime.now(), place='Somewhere')
-        msg = mailer.join_match_message(match, player)
+        msg = mailer.invite_message(match, player)
         self.assertEquals(msg.subject, 'Fobal')
         self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
         self.assertEquals(msg.to, [mailer.email_address(player)])
@@ -406,3 +406,93 @@ class MailerTests(TestCase):
         self.assertTrue(match.place in msg.body)
         self.assertTrue(mailer.join_match_url(match, player) in msg.body)
         self.assertTrue(mailer.leave_match_url(match, player) in msg.body)
+
+
+    def test_send_invite_mails(self):
+        match1 = Match.objects.create(date=datetime.now(), place='Here')
+        match2 = Match.objects.create(date=datetime.now(), place='There')
+        player1 = Player.objects.create(name='Juan Pedro', email='jp@fasola.com')
+        player2 = Player.objects.create(name='Juan Ramon', email='jr@carrasco.com')
+
+        matches = [match1, match2]
+        players = [player1, player2]
+
+        mailer.send_invite_mails(matches, players)
+
+        self.assertEquals(len(mail.outbox), len(matches) * len(players))
+
+
+    def test_leave_match_message(self):
+        canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
+        jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
+        match = Match.objects.create(date=datetime.now(), place='Centenario')
+        match.matchplayer_set.create(player=canario)
+        match.save()
+        msg = mailer.leave_match_message(match, canario, jaime)
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(canario)])
+        self.assertTrue('Hola %s' % canario.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(mailer.match_url(match) in msg.body)
+        self.assertTrue(jaime.name in msg.body)
+
+
+    def test_send_leave_mails(self):
+        canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
+        jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
+        match = Match.objects.create(date=datetime.now(), place='Centenario')
+        match.matchplayer_set.create(player=jaime)
+        match.save()
+
+        msg = mailer.send_leave_mails(match, canario)
+        self.assertEquals(len(mail.outbox), 1, 'Should send an email to Jaime')
+
+        msg = mail.outbox[0]
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(jaime)])
+        self.assertTrue('Hola %s' % jaime.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(mailer.match_url(match) in msg.body)
+        self.assertTrue(canario.name in msg.body)
+
+
+    def test_join_match_message(self):
+        mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
+        rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
+        match = Match.objects.create(date=datetime.now(), place='Franzini')
+        match.matchplayer_set.create(player=mateo)
+        match.save()
+
+        msg = mailer.join_match_message(match, mateo, rada)
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(mateo)])
+        self.assertTrue('Hola %s' % mateo.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(mailer.match_url(match) in msg.body)
+        self.assertTrue(rada.name in msg.body)
+        self.assertTrue('(%i)' % match.players.count() in msg.body)
+
+
+    def test_send_join_mails(self):
+        mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
+        rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
+        match = Match.objects.create(date=datetime.now(), place='Franzini')
+        match.matchplayer_set.create(player=rada)
+        match.matchplayer_set.create(player=mateo)
+        match.save()
+
+        msg = mailer.send_join_mails(match, mateo)
+        self.assertEquals(len(mail.outbox), 1, 'Should send an email to Rada')
+
+        msg = mail.outbox[0]
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(rada)])
+        self.assertTrue('Hola %s' % rada.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(mailer.match_url(match) in msg.body)
+        self.assertTrue(mateo.name in msg.body)
+        self.assertTrue('(%i)' % match.players.count() in msg.body)

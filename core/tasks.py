@@ -56,4 +56,4 @@ def create_matches():
 def create_matches_and_email_players():
     matches = create_matches()
     players = Player.objects.all()
-    mailer.send_invite_mails(matches, players)
+    return mailer.send_invite_mails(matches, players)

@@ -64,6 +64,7 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Switch to python 3
 - [x] **Go Live!**
 - [x] Notify players when a player leaves a match
+- [x] Notify players when a player joins a match
 - [ ] Add weekday to match date
 - [ ] Setup logging and log important information (match creation, email sending, players joining / leaving)
 - [ ] Save stats of players leaving matches

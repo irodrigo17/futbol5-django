@@ -29,7 +29,7 @@ def email_address(player):
     return '%s <%s>' % (player.name, player.email)
 
 
-def join_match_message(match, player):
+def invite_message(match, player):
     context = Context({
         'player': player,
         'match': match,
@@ -37,8 +37,8 @@ def join_match_message(match, player):
         'leave_match_url': leave_match_url(match, player),
     })
 
-    text = get_template('core/join_match_email.txt').render(context)
-    html = get_template('core/join_match_email.html').render(context)
+    text = get_template('core/match_invite_email.txt').render(context)
+    html = get_template('core/match_invite_email.html').render(context)
 
     address = email_address(player)
     msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
@@ -50,9 +50,12 @@ def send_invite_mails(matches, players):
     """
     Send emails to invite the given players to the given matches.
     """
+    sent_mails = 0
     for player in players:
         for match in matches:
-            join_match_message(match, player).send()
+            invite_message(match, player).send()
+            sent_mails += 1
+    return sent_mails
 
 
 def leave_match_message(match, player, leaving_player):
@@ -78,5 +81,38 @@ def send_leave_mails(match, leaving_player):
     the given leaving_player is not playing.
     leaving_player should have been removing from match.players already.
     """
+    sent_mails = 0
     for player in match.players.all():
         leave_match_message(match, player, leaving_player).send()
+        sent_mails += 1
+    return sent_mails
+
+def join_match_message(match, player, joining_player):
+    context = Context({
+        'player': player,
+        'joining_player': joining_player,
+        'match': match,
+        'match_url': match_url(match),
+    })
+
+    text = get_template('core/join_match_email.txt').render(context)
+    html = get_template('core/join_match_email.html').render(context)
+
+    address = email_address(player)
+    msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
+    msg.attach_alternative(html, "text/html")
+    return msg
+
+
+def send_join_mails(match, joining_player):
+    """
+    Send email notifications to all players in the given match to inform that
+    the given joining_player has joined.
+    joining_player should not be added to match.players yet.
+    """
+    sent_mails = 0
+    for player in match.players.all():
+        if player != joining_player:
+            join_match_message(match, player, joining_player).send()
+            sent_mails += 1
+    return sent_mails
