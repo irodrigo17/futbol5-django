@@ -65,14 +65,14 @@ There are some environment variables that need to be set for the app to work pro
 - [x] **Go Live!**
 - [x] Notify players when a player leaves a match
 - [x] Notify players when a player joins a match
-- [ ] Add weekday to match date
+- [x] Add weekday to match date
 - [ ] Setup logging and log important information (match creation, email sending, players joining / leaving)
+- [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Save stats of players leaving matches
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)
 - [ ] Invite external friends to a match (notify players)
 - [ ] Edit match time and place (notify players)
-- [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Improve UI
 - [ ] Send email notification the day of the match, include player list and optional friend invitations if len(match.players) < 10
 - [ ] Add static code analysis
