@@ -112,7 +112,8 @@ BASE_URL = os.environ['BASE_URL'] if 'BASE_URL' in os.environ else 'http://local
 
 # Date formats
 
-MATCH_DATE_FORMAT = "l j \d\e F \\a \l\\a\s H:i"
+MATCH_DATE_FORMAT = 'l j \d\e F \\a \l\\a\s H:i'
+JOIN_DATE_FORMAT = 'j/n G:i'
 
 
 # Logging

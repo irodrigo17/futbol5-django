@@ -7,17 +7,15 @@
 {% if match.players.count > 0 %}
   <table>
     <tr>
-      <th>Número</th>
+      <th>#</th>
       <th>Nombre</th>
-      <th>Emilio</th>
       <th>Fecha</th>
     </tr>
     {% for mp in match.matchplayer_set.all %}
     <tr>
       <td>{{ forloop.counter }}</td>
       <td>{{ mp.player.name }}</td>
-      <td>{{ mp.player.email }}</td>
-      <td>{{ mp.join_date }}</td>
+      <td>{{ mp.join_date | date:"JOIN_DATE_FORMAT" }}</td>
     </tr>
     {% endfor %}
   </table>
@@ -29,7 +27,7 @@
 {% if match.guests.count > 0 %}
   <table>
     <tr>
-      <th>Número</th>
+      <th>#</th>
       <th>Nombre</th>
       <th>Amigo de</th>
       <th>Fecha</th>
@@ -39,7 +37,7 @@
       <td>{{ forloop.counter }}</td>
       <td>{{ guest.name }}</td>
       <td>{{ guest.inviting_player.name }}</td>
-      <td>{{ guest.inviting_date }}</td>
+      <td>{{ guest.inviting_date | date:"JOIN_DATE_FORMAT" }}</td>
     </tr>
     {% endfor %}
   </table>
