@@ -1,5 +1,6 @@
 dj-database-url==0.3.0
 Django==1.7.4
 gunicorn==19.2.1
+newrelic==2.44.0.36
 psycopg2==2.6
 whitenoise==1.0.6
