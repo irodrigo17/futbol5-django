@@ -617,7 +617,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(player)])
 
 
-def UrlHelperTests(TestCase):
+class UrlHelperTests(TestCase):
 
     def test_absolute_url(self):
         base = settings.BASE_URL
