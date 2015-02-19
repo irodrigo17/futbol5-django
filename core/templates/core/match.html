@@ -3,7 +3,7 @@
 <h2>Que partidazo!</h2>
 <p>Se juega el <strong>{{ match.date | date:"MATCH_DATE_FORMAT" }}</strong> en <strong>{{ match.place }}</strong></p>
 
-<h2>El plantel</h2>
+<h3>El plantel</h3>
 {% if match.players.count > 0 %}
   <table class="table table-striped">
     <tr>
