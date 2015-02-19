@@ -32,6 +32,7 @@ Local server can be run with `foreman start web`.
 
 Using [TravisCI](https://travis-ci.org/irodrigo17/futbol5-django) for continuous integration and [Coveralls](https://coveralls.io/r/irodrigo17/futbol5-django) for test coverage.
 
+Using some very basic [Bootstrap](http://getbootstrap.com) styles.
 
 
 #### Environment variables
@@ -68,14 +69,14 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Add weekday to match date
 - [x] Setup logging and log important information (match creation, email sending, players joining / leaving)
 - [x] Invite external friends to a match (notify players)
+- [x] Mobile-friendly
+- [x] Improve UI
 - [ ] Delete invited friends (notify players)
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)
 - [ ] Send email notification the day of the match, include player list and optional friend invitations if len(match.players) < 10
 - [ ] Improve error handling
 - [ ] RESTful URLs and HTTP verbs
-- [ ] Mobile-friendly
-- [ ] Improve UI
 - [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Edit match time and place (notify players)
 - [ ] Save stats of players leaving matches
