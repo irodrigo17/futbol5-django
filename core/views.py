@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from core.models import Match, Player, MatchPlayer
@@ -33,6 +34,12 @@ def join_match(request, match_id, player_id):
     # TODO: should probably be POST to /matchplayers/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
+
+    if datetime.now() >= match.date:
+        # TODO: add proper HTML error page with a link to the next match
+        # TODO: use model signals and keep validation in one place
+        return HttpResponse(status=400, content='El partido ya fue')
+
     player = get_object_or_404(Player, pk=player_id)
 
     if not MatchPlayer.objects.filter(match=match, player=player).exists():
@@ -49,6 +56,12 @@ def leave_match(request, match_id, player_id):
     # TODO: should probably be DELETE to /matchplayers/<id>/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
+
+    if datetime.now() >= match.date:
+        # TODO: add proper HTML error page with a link to the next match
+        # TODO: use model signals and keep validation in one place
+        return HttpResponse(status=400, content='El partido ya fue')
+
     player = get_object_or_404(Player, pk=player_id)
 
     mp = match.matchplayer_set.filter(player=player)
@@ -65,6 +78,12 @@ def leave_match(request, match_id, player_id):
 def add_guest(request, match_id):
     # TODO: should probably be a POST to /guests/ to be more RESTful
     match = get_object_or_404(Match, pk=match_id)
+
+    if datetime.now() >= match.date:
+        # TODO: add proper HTML error page with a link to the next match
+        # TODO: use model signals and keep validation in one place
+        return HttpResponse(status=400, content='El partido ya fue')
+
     player = get_object_or_404(Player, pk=request.POST['inviting_player'])
 
     guest = match.guests.create(inviting_player=player, name=request.POST['guest'])
