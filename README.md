@@ -72,7 +72,8 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player / unsuscribe (save stats)
 - [ ] Send email notification the day of the match, include player list and optional friend invitations if len(match.players) < 10
-- [ ] Make URLs more RESTful
+- [ ] Improve error handling
+- [ ] RESTful URLs and HTTP verbs
 - [ ] Improve UI
 - [ ] Store player first and last names separately, and use only first name in emails
 - [ ] Edit match time and place (notify players)
