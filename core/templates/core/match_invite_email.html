@@ -1,6 +1,9 @@
 {% include 'core/partial_email_header.html' %}
 
-Anótate para el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+Anótate para el partido del
+<a href="{{ match_url }}">
+  {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+</a>
 <br/>
 <br/>
 <strong>

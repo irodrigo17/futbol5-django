@@ -14,6 +14,7 @@ def invite_message(match, player):
     context = Context({
         'player': player,
         'match': match,
+        'match_url': absolute_url(match_url(match, player)),
         'join_match_url': absolute_url(join_match_url(match, player)),
         'leave_match_url': absolute_url(leave_match_url(match, player)),
     })

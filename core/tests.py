@@ -489,8 +489,9 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(player)])
         self.assertTrue('Hola %s' % player.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.join_match_url(match, player) in msg.body)
-        self.assertTrue(mailer.leave_match_url(match, player) in msg.body)
+        self.assertTrue(match_url(match, player) in msg.body)
+        self.assertTrue(join_match_url(match, player) in msg.body)
+        self.assertTrue(leave_match_url(match, player) in msg.body)
 
 
     def test_send_invite_mails(self):
@@ -519,7 +520,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(canario)])
         self.assertTrue('Hola %s' % canario.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.match_url(match, canario) in msg.body)
+        self.assertTrue(match_url(match, canario) in msg.body)
         self.assertTrue(jaime.name in msg.body)
 
 
@@ -539,7 +540,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(jaime)])
         self.assertTrue('Hola %s' % jaime.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.match_url(match, jaime) in msg.body)
+        self.assertTrue(match_url(match, jaime) in msg.body)
         self.assertTrue(canario.name in msg.body)
 
 
@@ -556,7 +557,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(mateo)])
         self.assertTrue('Hola %s' % mateo.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.match_url(match, mateo) in msg.body)
+        self.assertTrue(match_url(match, mateo) in msg.body)
         self.assertTrue(rada.name in msg.body)
         self.assertTrue('(%i)' % match.players.count() in msg.body)
 
@@ -578,7 +579,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(rada)])
         self.assertTrue('Hola %s' % rada.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.match_url(match, rada) in msg.body)
+        self.assertTrue(match_url(match, rada) in msg.body)
         self.assertTrue(mateo.name in msg.body)
         self.assertTrue('(%i)' % match.players.count() in msg.body)
 
@@ -595,7 +596,7 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(player)])
         self.assertTrue('Hola %s' % player.name in msg.body)
         self.assertTrue(match.place in msg.body)
-        self.assertTrue(mailer.match_url(match, player) in msg.body)
+        self.assertTrue(match_url(match, player) in msg.body)
         self.assertTrue(inviting_player.name in msg.body)
         self.assertTrue(guest.name in msg.body)
 
