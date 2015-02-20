@@ -4,5 +4,4 @@ Saludos,
 Fobal
 
 
-El código de este sitio está disponible en https://github.com/irodrigo17/futbol5-django
-Cualquier contribución es bienvenida!
+Podes contribuir en https://github.com/irodrigo17/futbol5-django
