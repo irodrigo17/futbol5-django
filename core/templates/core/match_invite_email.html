@@ -1,23 +1,22 @@
 {% include 'core/partial_email_header.html' %}
-
-Anótate para el partido del
-<a href="{{ match_url }}">
-  {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
-</a>
-<br/>
-<br/>
-<strong>
-  <a href="{{ join_match_url }}">Juego!</a>
-</strong>
-<br/>
-<br/>
-Si tienes que bajarte avísale a tus compañeros!
-<br/>
-<br/>
-<strong>
-  <a href="{{ leave_match_url }}">Me tengo que bajar :(</a>
-</strong>
-<br/>
-<br/>
+<p>
+  Anótate para el partido del
+  <a href="{{ match_url }}">
+    {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+  </a>
+</p>
+<p>
+  <strong>
+    <a href="{{ join_match_url }}">Juego!</a>
+  </strong>
+</p>
+<p>
+  Si tienes que bajarte avísale a tus compañeros!
+</p>
+<p>
+  <strong>
+    <a href="{{ leave_match_url }}">Me tengo que bajar :(</a>
+  </strong>
+</p>
 
 {% include 'core/partial_email_footer.html' %}

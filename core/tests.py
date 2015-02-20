@@ -559,7 +559,6 @@ class MailerTests(TestCase):
         self.assertTrue(match.place in msg.body)
         self.assertTrue(match_url(match, mateo) in msg.body)
         self.assertTrue(rada.name in msg.body)
-        self.assertTrue('(%i)' % match.players.count() in msg.body)
 
 
     def test_send_join_mails(self):
@@ -581,7 +580,6 @@ class MailerTests(TestCase):
         self.assertTrue(match.place in msg.body)
         self.assertTrue(match_url(match, rada) in msg.body)
         self.assertTrue(mateo.name in msg.body)
-        self.assertTrue('(%i)' % match.players.count() in msg.body)
 
 
     def test_invite_guest_message(self):

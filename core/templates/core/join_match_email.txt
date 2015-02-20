@@ -2,6 +2,6 @@
 
 {{ joining_player.name }} juega en el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}.
 
-Acá está la lista actualizada de jugadores ({{ match.players.count }}): {{ match_url }}
+Acá está la lista actualizada: {{ match_url }}
 
 {% include 'core/partial_email_footer.txt' %}

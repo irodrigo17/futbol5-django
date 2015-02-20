@@ -1,11 +1,11 @@
 {% include 'core/partial_email_header.html' %}
 
 <p>
-  {{ joining_player.name }} juega en el partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+  {{ joining_player.name }} juega en el partido del
+  {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
 </p>
-<br/>
 <p>
-  Acá está la <a href="{{ match_url }}">lista actualizada</a> de jugadores ({{ match.players.count }})
+  Acá está la <a href="{{ match_url }}">lista actualizada</a>
 </p>
 
 {% include 'core/partial_email_footer.html' %}

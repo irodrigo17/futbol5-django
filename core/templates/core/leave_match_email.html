@@ -1,9 +1,9 @@
 {% include 'core/partial_email_header.html' %}
 
 <p>
-  {{ leaving_player.name }} se bajó del partido del {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+  {{ leaving_player.name }} se bajó del partido del
+  {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
 </p>
-<br/>
 <p>
   Acá está <a href="{{ match_url }}">la lista actualizada</a>
 </p>
