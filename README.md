@@ -72,6 +72,8 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Mobile-friendly
 - [x] Improve UI
 - [x] Match invitation emails include match URL
+- [ ] Send email notifications to joining/leaving players too, and to players inviting guests
+- [ ] Add flash messages when joining/leaving/inviting guests
 - [ ] Send daily email notifications with the status of the next match
 - [ ] Players can delete invited friends from the web (notify players)
 - [ ] Players can join or leave a match from the web
