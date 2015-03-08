@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'rest_framework',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -107,7 +108,7 @@ EMAIL_HOST_PASSWORD = os.environ['DJANGO_EMAIL_HOST_PASSWORD']
 
 # Base URL
 
-BASE_URL = os.environ['BASE_URL'] if 'BASE_URL' in os.environ else 'http://localhost:5000/'
+BASE_URL = os.environ['BASE_URL']
 
 
 # Date formats
@@ -155,4 +156,12 @@ LOGGING = {
             'propagate': False,
         }
     }
+}
+
+
+# Setup Django REST Framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAdminUser'],
+    'PAGINATE_BY': 10,
 }

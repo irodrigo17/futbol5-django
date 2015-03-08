@@ -84,5 +84,8 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Improve error handling
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
-- [ ] Add static code analysis
-- [ ] Create a RESTful API and use a frontend JavaScript framework for the UI
+- [ ] Add static code analysis (PEP8)
+- [ ] Expose a RESTful API using [Django Rest Framework](http://www.django-rest-framework.org)
+- [ ] Use [AngularJS](https://angularjs.org) for the frontend
+- [ ] Encourage players to join an upcoming match if needed
+- [ ] Add minimum security (avoid login if possible, or fully automate it)
