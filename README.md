@@ -72,6 +72,9 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Mobile-friendly
 - [x] Improve UI
 - [x] Match invitation emails include match URL
+- [ ] Keep player info (cookies) 
+- [ ] Fix next match (probably a timezone issue)
+- [ ] Send mails when models are saved (so admin works)
 - [ ] Send email notifications to joining/leaving players too, and to players inviting guests
 - [ ] Add flash messages when joining/leaving/inviting guests
 - [ ] Send daily email notifications with the status of the next match
