@@ -17,6 +17,10 @@ class Player(models.Model):
     def top_player(cls):
         return Player.objects.annotate(match_count=Count('matches')).order_by('-match_count').first()
 
+    def can_join(self, match):
+        return (not match.players.filter(id=self.id).exists()) and match.date > datetime.now()
+
+
 
 class Match(models.Model):
 

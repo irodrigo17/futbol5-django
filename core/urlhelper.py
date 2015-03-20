@@ -27,5 +27,5 @@ def leave_match_url(match, player):
 
 def match_url(match, player):
     url = reverse('core:match', args=[match.id])
-    url += '?player=%s' % player.id # TODO: kind of hacky
+    url += '?player_id=%s' % player.id # TODO: kind of hacky
     return url

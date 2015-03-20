@@ -19,7 +19,7 @@ def current_player(request):
     Return player with id = player_id, or None.
     """
     if 'player_id' in request.GET:
-        request.session['player_id'] = request.GET['player_id']
+        request.session['player_id'] = int(request.GET['player_id'])
 
     if 'player_id' in request.session:
         try:
@@ -58,6 +58,9 @@ def match(request, match_id):
     context = {'match': match}
 
     set_current_player(request,context)
+
+    player = context.get('player', None)
+    context['can_join'] = player != None and player.can_join(match)
 
     return render(request, 'core/match.html', context)
 

@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 from django.core import mail
 
 from core.models import Player, Match, MatchPlayer, Guest
-from core import tasks, mailer
+from core import tasks, mailer, views
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
 
 # Model tests
@@ -75,6 +75,28 @@ class PlayerTests(TestCase):
 
         top_player = Player.top_player()
         self.assertTrue(top_player, p2)
+
+
+    def test_can_join(self):
+        """
+        can_join should be True iff player has not joined already
+        and match has not been played yet
+        """
+        m1 = Match.objects.create(date=datetime.now() - timedelta(days=1))
+        m2 = Match.objects.create(date=datetime.now() + timedelta(days=1))
+
+        p1 = Player.objects.create(name='Player1', email="p1@email.com")
+        p2 = Player.objects.create(name='Player2', email="p2@email.com")
+
+        self.assertFalse(p1.can_join(m1))
+        self.assertFalse(p2.can_join(m1))
+
+        self.assertTrue(p1.can_join(m2))
+        self.assertTrue(p2.can_join(m2))
+
+        MatchPlayer.objects.create(match=m2, player=p1)
+        self.assertFalse(p1.can_join(m2))
+        self.assertTrue(p2.can_join(m2))
 
 
 class MatchTests(TestCase):
@@ -164,7 +186,7 @@ class ViewTests(TestCase):
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
         player = Player.objects.create(name='Test Match View', email="test@matchview.com")
-        response = c.get('/matches/%d/' % match.id, {'player': player.id})
+        response = c.get('/matches/%d/' % match.id, {'player_id': player.id})
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
         self.assertEquals(response.context['player'], player)
@@ -175,8 +197,9 @@ class ViewTests(TestCase):
     def test_match_view_with_invalid_player(self):
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
-        response = c.get('/matches/%d/' % match.id, {'player': 12345})
-        self.assertEquals(response.status_code, 404)
+        response = c.get('/matches/%d/' % match.id, {'player_id': 12345})
+        self.assertEquals(response.status_code, 200)
+        self.assertFalse('player' in response.context)
 
 
     def test_match_view_404(self):
@@ -395,6 +418,29 @@ class ViewTests(TestCase):
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(mail.outbox), expected_emails, "Should send one email per match per player")
 
+
+    def test_current_player(self):
+        # base case
+        c = Client()
+        response = c.get('/')
+        self.assertFalse('player_id' in c.session)
+
+        # store player in session
+        player = Player.objects.create(name='Jimmy Page', email='jpage@zeppelin.com')
+        print('session: %s' % c.session)
+        response = c.get('/?player_id=%i' % player.id)
+        print('session: %s' % c.session)
+        self.assertTrue('player_id' in c.session)
+        self.assertEquals(c.session['player_id'], player.id)
+
+        # session is persisted
+        response = c.get('/')
+        self.assertTrue('player_id' in c.session)
+        self.assertEquals(c.session['player_id'], player.id)
+
+        # remove player from session if bad id
+        response = c.get('/?player_id=12345')
+        self.assertFalse('player_id' in c.session)
 
 
 # Tasks tests
@@ -642,4 +688,4 @@ class UrlHelperTests(TestCase):
         match = Match(id=5)
         player = Player(id=7)
         url = match_url(match, player)
-        self.assertEquals(url, '/matches/5/?player=7')
+        self.assertEquals(url, '/matches/5/?player_id=7')
