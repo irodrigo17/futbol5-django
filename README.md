@@ -72,14 +72,18 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Mobile-friendly
 - [x] Improve UI
 - [x] Match invitation emails include match URL
-- [ ] Keep player info (cookies) 
+- [x] Keep player info (cookies)
+- [x] Expose a RESTful API using [Django Rest Framework](http://www.django-rest-framework.org)
 - [ ] Fix next match (probably a timezone issue)
-- [ ] Send mails when models are saved (so admin works)
-- [ ] Send email notifications to joining/leaving players too, and to players inviting guests
-- [ ] Add flash messages when joining/leaving/inviting guests
 - [ ] Send daily email notifications with the status of the next match
+- [ ] Use [AngularJS](https://angularjs.org) for the frontend
 - [ ] Players can delete invited friends from the web (notify players)
 - [ ] Players can join or leave a match from the web
+- [ ] Send mails when models are saved (so Django admin and API work)
+- [ ] Add flash messages when joining/leaving/inviting guests
+- [ ] Add static code analysis (PEP8)
+- [ ] Add minimum security (server generated token sent in email links instead of player id)
+- [ ] Send email notifications to joining/leaving players too, and to players inviting guests
 - [ ] Cancel matches (notify players and save stats)
 - [ ] Delete player (save stats)
 - [ ] Edit match time and place (notify players)
@@ -87,8 +91,4 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Improve error handling
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
-- [ ] Add static code analysis (PEP8)
-- [ ] Expose a RESTful API using [Django Rest Framework](http://www.django-rest-framework.org)
-- [ ] Use [AngularJS](https://angularjs.org) for the frontend
 - [ ] Encourage players to join an upcoming match if needed
-- [ ] Add minimum security (avoid login if possible, or fully automate it)
