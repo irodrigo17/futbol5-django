@@ -10,6 +10,36 @@ logger = logging.getLogger(__name__)
 
 # TODO: use generic views?
 
+
+def current_player(request):
+    """
+    Get current player for the request.
+    If player_id in GET parameters then set player_id in session,
+    else try to get player_id from session.
+    Return player with id = player_id, or None.
+    """
+    if 'player_id' in request.GET:
+        request.session['player_id'] = request.GET['player_id']
+
+    if 'player_id' in request.session:
+        try:
+            return Player.objects.get(id=request.session['player_id'])
+        except Player.DoesNotExist:
+            logger.info('Player does not exist, removing from session: %s' % request.session['player_id'])
+            del request.session['player_id']
+    else:
+        return None
+
+
+def set_current_player(request,context):
+    """
+    Get the current player from the request and set it to the context if available.
+    """
+    player = current_player(request)
+    if player != None:
+        context['player'] = player
+
+
 def index(request):
     context = {
         'match_count': Match.objects.count(),
@@ -17,6 +47,9 @@ def index(request):
         'top_player': Player.top_player(),
         'next_match': Match.next_match(),
     }
+
+    set_current_player(request,context)
+
     return render(request, 'core/index.html', context)
 
 
@@ -24,8 +57,7 @@ def match(request, match_id):
     match = get_object_or_404(Match, pk=match_id)
     context = {'match': match}
 
-    if 'player' in request.GET:
-        context['player'] = get_object_or_404(Player, pk=request.GET['player'])
+    set_current_player(request,context)
 
     return render(request, 'core/match.html', context)
 
