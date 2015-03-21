@@ -139,6 +139,10 @@ class MatchTests(TestCase):
         next_match = Match.next_match()
         self.assertTrue(next_match == m2)
 
+        m4 = Match.objects.create(date=datetime.now() + timedelta(minutes=1), place='Really Close')
+        next_match = Match.next_match()
+        self.assertTrue(next_match == m4)
+
 
 # View tests
 
@@ -427,9 +431,7 @@ class ViewTests(TestCase):
 
         # store player in session
         player = Player.objects.create(name='Jimmy Page', email='jpage@zeppelin.com')
-        print('session: %s' % c.session)
         response = c.get('/?player_id=%i' % player.id)
-        print('session: %s' % c.session)
         self.assertTrue('player_id' in c.session)
         self.assertEquals(c.session['player_id'], player.id)
 
