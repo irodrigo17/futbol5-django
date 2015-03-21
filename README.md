@@ -34,6 +34,8 @@ Using [TravisCI](https://travis-ci.org/irodrigo17/futbol5-django) for continuous
 
 Using some very basic [Bootstrap](http://getbootstrap.com) styles.
 
+Using [Django Rest Framework](http://www.django-rest-framework.org) to expose a RESTful API.
+
 
 #### Environment variables
 
