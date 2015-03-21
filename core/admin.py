@@ -1,3 +1,7 @@
+"""
+Django admin configuration.
+"""
+
 from django.contrib import admin
 from core.models import Player, Match, MatchPlayer, Guest
 

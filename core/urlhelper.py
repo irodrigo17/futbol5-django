@@ -1,3 +1,7 @@
+"""
+This module has helper functions for dealing with urls.
+"""
+
 from urllib.parse import urljoin
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -26,6 +30,9 @@ def leave_match_url(match, player):
 
 
 def match_url(match, player):
+    """
+    Relative URL for the given match and the given player.
+    """
     url = reverse('core:match', args=[match.id])
     url += '?player_id=%s' % player.id # TODO: kind of hacky
     return url

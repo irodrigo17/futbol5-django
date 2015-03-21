@@ -1,3 +1,7 @@
+"""
+Django views module.
+"""
+
 import logging
 from datetime import datetime
 from django.shortcuts import render, get_object_or_404
@@ -41,6 +45,9 @@ def set_current_player(request,context):
 
 
 def index(request):
+    """
+    View for the index page of the site.
+    """
     context = {
         'match_count': Match.objects.count(),
         'player_count': Player.objects.count(),
@@ -54,6 +61,11 @@ def index(request):
 
 
 def match(request, match_id):
+    """
+    View for displaying a match with the given match_id.
+    If the match does not exist returns 404.
+    Any player stored in the session is set to the context.
+    """
     match = get_object_or_404(Match, pk=match_id)
     context = {'match': match}
 
@@ -66,6 +78,15 @@ def match(request, match_id):
 
 
 def join_match(request, match_id, player_id):
+    """
+    View for joining a match.
+    Adds the player with the given player_id to the match with the given
+    match_id, and redirects to the match view upon success.
+    If match or player do not exist it returns 404.
+    If match has already been played returns 400.
+    If player was already in the match it does nothing.
+    Emails are sent to the match players.
+    """
     # TODO: should probably be POST to /matchplayers/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
@@ -88,6 +109,15 @@ def join_match(request, match_id, player_id):
 
 
 def leave_match(request, match_id, player_id):
+    """
+    View for leaving a match.
+    Removes the player with the given player_id from the match with the given
+    match_id, and redirects to the match view upon success.
+    If match or player do not exist it returns 404.
+    If match has already been played returns 400.
+    If player had not joined the match, nothing happens.
+    Emails are sent to the match players.
+    """
     # TODO: should probably be DELETE to /matchplayers/<id>/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
@@ -111,6 +141,14 @@ def leave_match(request, match_id, player_id):
 
 
 def add_guest(request, match_id):
+    """
+    View for adding a guest.
+    Adds a guest to the match with the given match_id, and redirects to the match.
+    Expects the guest data in the POST.
+    Returns 404 if the match or the inviting_player can't be foud.
+    Returns 400 if the match has already been played.
+    Emails are sent to the match players.
+    """
     # TODO: should probably be a POST to /guests/ to be more RESTful
     match = get_object_or_404(Match, pk=match_id)
 
@@ -131,6 +169,11 @@ def add_guest(request, match_id):
 
 
 def send_mail(request):
+    """
+    View for sending emails.
+    This view is hit daily by the scheduler to create matches when needed,
+    and send email notifications to players.
+    """
     # TODO: should be a POST and secured
     sent_emails = 0
     if 'match' in request.GET and 'player' in request.GET:

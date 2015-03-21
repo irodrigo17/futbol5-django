@@ -1,3 +1,12 @@
+"""
+Tests module for the following modules:
+- models
+- views
+- mailer
+- tasks
+- urlhelper
+"""
+
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -12,6 +21,9 @@ from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_
 # Model tests
 
 class PlayerTests(TestCase):
+    """
+    TestCase subclass for the Player model.
+    """
 
     def test_name_is_unique(self):
         """
@@ -62,6 +74,9 @@ class PlayerTests(TestCase):
             p.full_clean()
 
     def test_top_player(self):
+        """
+        top_player should return the player with the most games played
+        """
         p0 = Player.objects.create(name='0 matches', email='0matches@email.com')
         p1 = Player.objects.create(name='1 matches', email='1matches@email.com')
         p2 = Player.objects.create(name='2 matches', email='2matches@email.com')
@@ -100,6 +115,9 @@ class PlayerTests(TestCase):
 
 
 class MatchTests(TestCase):
+    """
+    TestCase subclass for the Match model.
+    """
 
     def test_date_is_unique(self):
         """
@@ -147,10 +165,13 @@ class MatchTests(TestCase):
 # View tests
 
 class ViewTests(TestCase):
+    """
+    TestCase subclass for the views module.
+    """
 
     def test_index_view(self):
         """
-        index view should be rendered with the proper context and template
+        Index view should be rendered with the proper context and template.
         """
         c = Client()
         response = c.get('/')
@@ -174,7 +195,7 @@ class ViewTests(TestCase):
 
     def test_match_view(self):
         """
-        match view should be rendered with the proper context and template
+        Match view should be rendered with the proper context and template.
         """
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
@@ -187,6 +208,9 @@ class ViewTests(TestCase):
 
 
     def test_match_view_with_valid_player(self):
+        """
+        Match view with a valid player should render properly.
+        """
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
         player = Player.objects.create(name='Test Match View', email="test@matchview.com")
@@ -199,6 +223,9 @@ class ViewTests(TestCase):
 
 
     def test_match_view_with_invalid_player(self):
+        """
+        Match view with an invalid player should render as if there were no player.
+        """
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
         response = c.get('/matches/%d/' % match.id, {'player_id': 12345})
@@ -208,7 +235,7 @@ class ViewTests(TestCase):
 
     def test_match_view_404(self):
         """
-        match view should return a 404 if a match with the given id does not exist
+        Match view should return a 404 if a match with the given id does not exist.
         """
         c = Client()
         response = c.get('/matches/1234/')
@@ -217,7 +244,7 @@ class ViewTests(TestCase):
 
     def test_join_match_view(self):
         """
-        join match view should redirect to match view and create the proper MatchPlayer
+        Join match view should redirect to match view and create the proper MatchPlayer.
         """
         match = Match.objects.create(date=datetime.now() + timedelta(days=2), place="Centenario")
         player = Player.objects.create(name="Join Match View", email="join@match.com")
@@ -236,7 +263,7 @@ class ViewTests(TestCase):
 
     def test_join_match_view_404(self):
         """
-        join match view should return 404 if match or player do not exist
+        Join match view should return 404 if match or player do not exist.
         """
         match = Match.objects.create(date=datetime.now() + timedelta(hours=2), place="Centenario")
         player = Player.objects.create(name="Join Match View 404", email="join404@match.com")
@@ -251,8 +278,8 @@ class ViewTests(TestCase):
 
     def test_join_match_view_duplicate(self):
         """
-        join match view should redirect to match view without creating any
-        MatchPlayer if it already exists, and set a proper message in the context
+        Join match view should redirect to match view without creating any
+        MatchPlayer if it already exists, and set a proper message in the context.
         """
         match = Match.objects.create(date=datetime.now() + timedelta(seconds=10), place="Centenario")
         player = Player.objects.create(name="Join Match View Duplicate", email="join@dup.com")
@@ -275,7 +302,7 @@ class ViewTests(TestCase):
 
     def test_join_match_view_after(self):
         """
-        join match view should fail if current date > match date
+        Join match view should fail if current date > match date.
         """
         match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place="Centenario")
         player = Player.objects.create(name="Join Match View After", email="join@dup.com")
@@ -287,7 +314,7 @@ class ViewTests(TestCase):
 
     def test_leave_match_view(self):
         """
-        leave match view should redirect to match view and delete the proper MatchPlayer
+        Leave match view should redirect to match view and delete the proper MatchPlayer.
         """
         match = Match.objects.create(date=datetime.now() + timedelta(days=2), place='Here')
         player1 = Player.objects.create(name='Leave Match 1', email='leavematch1@email.com')
@@ -315,7 +342,7 @@ class ViewTests(TestCase):
 
     def test_leave_match_view_404(self):
         """
-        join match view should return 404 if match or player do not exist
+        Join match view should return 404 if match or player do not exist.
         """
         match = Match.objects.create(date=datetime.now() + timedelta(days=2), place="Centenario")
         player = Player.objects.create(name="Leave Match 404", email="leave404@match.com")
@@ -334,7 +361,7 @@ class ViewTests(TestCase):
 
     def test_leave_match_view_after(self):
         """
-        leave match view should fail if current date > match date
+        Leave match view should fail if current date > match date.
         """
         match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place="Centenario")
         player = Player.objects.create(name="Leave Match View After", email="leave@after.com")
@@ -346,6 +373,9 @@ class ViewTests(TestCase):
 
 
     def test_add_guest(self):
+        """
+        Adding a guest should work as expected with correct data.
+        """
         match = Match.objects.create(date=datetime.now() + timedelta(seconds=10), place='Somewhere')
         inviter = Player.objects.create(name='Inviter', email='inviter@email.com')
         other_player = Player.objects.create(name='Other Player', email='other@player.com')
@@ -371,6 +401,9 @@ class ViewTests(TestCase):
 
 
     def test_add_guest_after(self):
+        """
+        Add guest view should return 400 if match has already been played.
+        """
         # setup initial data
         match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place='Somewhere')
         inviter = Player.objects.create(name='Inviter', email='inviter@email.com')
@@ -398,6 +431,9 @@ class ViewTests(TestCase):
 
 
     def test_send_mail_view_debug(self):
+        """
+        Test debug send mail view.
+        """
         match = Match.objects.create(date=datetime.now(), place='There')
         player = Player.objects.create(name='My Player', email='my@player.com')
 
@@ -410,6 +446,9 @@ class ViewTests(TestCase):
 
 
     def test_send_mail_view(self):
+        """
+        Test send mail view.
+        """
         prev_matches = Match.objects.count()
 
         c = Client()
@@ -424,6 +463,9 @@ class ViewTests(TestCase):
 
 
     def test_current_player(self):
+        """
+        Test that current player is properly set and retrieved from session.
+        """
         # base case
         c = Client()
         response = c.get('/')
@@ -448,8 +490,14 @@ class ViewTests(TestCase):
 # Tasks tests
 
 class TasksTests(TestCase):
+    """
+    TestCase subclass for the tasks module.
+    """
 
     def assert_datetime_equals(self, date1, date2, new_day):
+        """
+        Helper method for comparing two datetimes.
+        """
         self.assertEquals(date2.year, date1.year)
         self.assertEquals(date2.month, date1.month)
         self.assertEquals(date2.day, new_day)
@@ -460,6 +508,9 @@ class TasksTests(TestCase):
 
 
     def test_next_weekday(self):
+        """
+        Test next weekday.
+        """
         wed = datetime(2015, 2, 11, 18, 39, 59, 1234)
 
         next_fri = tasks.next_weekday(wed, 4)
@@ -473,6 +524,9 @@ class TasksTests(TestCase):
 
 
     def test_default_weekdays_and_times(self):
+        """
+        Test default weekdays and times.
+        """
         weekdays = tasks.default_weekdays_and_times()
         self.assertEquals(weekdays[0]['weekday'], 2)
         self.assertEquals(weekdays[0]['hour'], 19)
@@ -481,6 +535,9 @@ class TasksTests(TestCase):
 
 
     def test_week_dates(self):
+        """
+        Test week dates.
+        """
         now = datetime.now()
         weekdays_and_times = tasks.default_weekdays_and_times()
 
@@ -504,10 +561,16 @@ class TasksTests(TestCase):
 
 
     def test_default_place(self):
+        """
+        Test default place.
+        """
         self.assertEquals(tasks.default_place(), 'River')
 
 
     def test_create_matches(self):
+        """
+        Test the create_matches function.
+        """
         expected_dates = tasks.week_dates(datetime.now(), tasks.default_weekdays_and_times())
         expected_place = tasks.default_place()
         matches = tasks.create_matches()
@@ -521,14 +584,23 @@ class TasksTests(TestCase):
 # Mailer tests
 
 class MailerTests(TestCase):
+    """
+    Test case subclass for the mailer module.
+    """
 
     def test_email_address(self):
+        """
+        Test email address generation.
+        """
         player = Player.objects.create(name='Ringo Starr', email='ringo@beatles.com')
         address = mailer.email_address(player)
         self.assertEquals(address, '%s <%s>' % (player.name, player.email))
 
 
     def test_invite_message(self):
+        """
+        Test the invite message.
+        """
         player = Player.objects.create(name='George Harrison', email='george@beatles.com')
         match = Match.objects.create(date=datetime.now(), place='Somewhere')
         msg = mailer.invite_message(match, player)
@@ -543,6 +615,9 @@ class MailerTests(TestCase):
 
 
     def test_send_invite_mails(self):
+        """
+        Test sending invite messages.
+        """
         match1 = Match.objects.create(date=datetime.now(), place='Here')
         match2 = Match.objects.create(date=datetime.now(), place='There')
         player1 = Player.objects.create(name='Juan Pedro', email='jp@fasola.com')
@@ -557,6 +632,9 @@ class MailerTests(TestCase):
 
 
     def test_leave_match_message(self):
+        """
+        Test the leave match message.
+        """
         canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
         jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
         match = Match.objects.create(date=datetime.now(), place='Centenario')
@@ -573,6 +651,9 @@ class MailerTests(TestCase):
 
 
     def test_send_leave_mails(self):
+        """
+        Test sending leave messages.
+        """
         canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
         jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
         match = Match.objects.create(date=datetime.now(), place='Centenario')
@@ -593,6 +674,9 @@ class MailerTests(TestCase):
 
 
     def test_join_match_message(self):
+        """
+        Test the join match message.
+        """
         mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
         rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
         match = Match.objects.create(date=datetime.now(), place='Franzini')
@@ -610,6 +694,9 @@ class MailerTests(TestCase):
 
 
     def test_send_join_mails(self):
+        """
+        Test sending join messages.
+        """
         mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
         rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
         match = Match.objects.create(date=datetime.now(), place='Franzini')
@@ -631,6 +718,9 @@ class MailerTests(TestCase):
 
 
     def test_invite_guest_message(self):
+        """
+        Test the invite guest message.
+        """
         match = Match.objects.create(date=datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
@@ -648,6 +738,9 @@ class MailerTests(TestCase):
 
 
     def test_send_invite_guest_mails(self):
+        """
+        Test sengind guest invite messages.
+        """
         match = Match.objects.create(date=datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
@@ -664,15 +757,27 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(player)])
 
 
+# URL helper tests
+
 class UrlHelperTests(TestCase):
+    """
+    TestCase subclass for the urlhelper module.
+    """
 
     def test_absolute_url(self):
+        """
+        Test creating an absolute URL from a relative URL.
+        """
         base = settings.BASE_URL
         relative = 'myrelativeurl'
         absolute = absolute_url(relative)
         self.assertEquals(absolute, urljoin(base, relative))
 
+
     def test_join_match_url(self):
+        """
+        Test the join match URL.
+        """
         match = Match(id=1)
         player = Player(id=2)
         url = join_match_url(match, player)
@@ -680,6 +785,9 @@ class UrlHelperTests(TestCase):
 
 
     def test_leave_match_url(self):
+        """
+        Test the leave match URL.
+        """
         match = Match(id=3)
         player = Player(id=4)
         url = leave_match_url(match, player)
@@ -687,6 +795,9 @@ class UrlHelperTests(TestCase):
 
 
     def test_match_url(self):
+        """
+        Test the match URL contains the player id as a query parameter.
+        """
         match = Match(id=5)
         player = Player(id=7)
         url = match_url(match, player)

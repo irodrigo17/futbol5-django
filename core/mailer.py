@@ -1,16 +1,27 @@
-from datetime import datetime
+"""
+Mailer module for sending emails.
+"""
+
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
-from django.core.exceptions import ObjectDoesNotExist
-from core.models import Player, Match, MatchPlayer
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
 
+
 def email_address(player):
+    """
+    Email address for the given player.
+    """
     return '%s <%s>' % (player.name, player.email)
 
 
 def invite_message(match, player):
+    """
+    Email message for inviting the given player to the given match.
+    Includes plain text and HTML versions of the body.
+    Includes links for the player to join/leave the match,
+    and a link to the match itself.
+    """
     context = Context({
         'player': player,
         'match': match,
@@ -31,6 +42,9 @@ def invite_message(match, player):
 def send_invite_mails(matches, players):
     """
     Send emails to invite the given players to the given matches.
+    This is a convenience method that uses invite_message to create and send
+    messages for all players.
+    Returns the number of emails sent.
     """
     sent_mails = 0
     for player in players:
@@ -41,6 +55,11 @@ def send_invite_mails(matches, players):
 
 
 def leave_match_message(match, player, leaving_player):
+    """
+    Email message to notify the given player about the leaving_player leaving the match.
+    Includes plain text and HTML versions of the body.
+    Includes a link to the match.
+    """
     context = Context({
         'player': player,
         'leaving_player': leaving_player,
@@ -61,15 +80,23 @@ def send_leave_mails(match, leaving_player):
     """
     Send email notifications to all players in the given match to inform that
     the given leaving_player is not playing.
-    leaving_player should have been removing from match.players already.
+    This is a convenience method that uses leave_match_message to create messages.
+    Returns the number of emails sent.
     """
     sent_mails = 0
     for player in match.players.all():
-        leave_match_message(match, player, leaving_player).send()
-        sent_mails += 1
+        if player != leaving_player:
+            leave_match_message(match, player, leaving_player).send()
+            sent_mails += 1
     return sent_mails
 
+
 def join_match_message(match, player, joining_player):
+    """
+    Creates and returns an email message to notify the given player about
+    the given joining_player joining the given match.
+    Includes plain text and HTML vesions of the body and a link to the match.
+    """
     context = Context({
         'player': player,
         'joining_player': joining_player,
@@ -90,7 +117,8 @@ def send_join_mails(match, joining_player):
     """
     Send email notifications to all players in the given match to inform that
     the given joining_player has joined.
-    joining_player should not be added to match.players yet.
+    This is a convenience method that uses join_match_message and returns the
+    number of emails sent.
     """
     sent_mails = 0
     for player in match.players.all():
@@ -101,6 +129,11 @@ def send_join_mails(match, joining_player):
 
 
 def invite_guest_message(match, player, inviting_player, guest):
+    """
+    Creates and returns an email message to notify the given player about the
+    inviting_player inviting the guest to the match.
+    Contains plain text and HTML versions of the body and a link to the match.
+    """
     context = Context({
         'player': player,
         'inviting_player': inviting_player,
@@ -120,8 +153,10 @@ def invite_guest_message(match, player, inviting_player, guest):
 
 def send_invite_guest_mails(match, inviting_player, guest):
     """
-    Send email notifications to all players in the given match to inform that
-    the given inviting_player has invited the given giest to play.
+    Send email notifications to all players but the inviting_player in the given
+    match to inform that the given inviting_player has invited the given guest.
+    Convenience method that calls invite_guest_message and returns the number of
+    emails sent.
     """
     sent_mails = 0
     for player in match.players.all():
