@@ -1,7 +1,5 @@
-import os
 from datetime import datetime, timedelta
-from django.conf import settings
-from core.models import Player, Match, MatchPlayer
+from core.models import Player, Match
 from core import mailer
 
 ##### helper methods #####

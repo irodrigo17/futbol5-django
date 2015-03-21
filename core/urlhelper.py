@@ -5,7 +5,6 @@ This module has helper functions for dealing with urls.
 from urllib.parse import urljoin
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from core.models import Match, Player
 
 
 def absolute_url(relative_url):

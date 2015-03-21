@@ -8,9 +8,9 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
-from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
+from core.urlhelper import match_url
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 # TODO: use generic views?
 
@@ -29,13 +29,13 @@ def current_player(request):
         try:
             return Player.objects.get(id=request.session['player_id'])
         except Player.DoesNotExist:
-            logger.info('Player does not exist, removing from session: %s' % request.session['player_id'])
+            LOGGER.info('Player does not exist, removing from session: %s' % request.session['player_id'])
             del request.session['player_id']
     else:
         return None
 
 
-def set_current_player(request,context):
+def set_current_player(request, context):
     """
     Get the current player from the request and set it to the context if available.
     """
@@ -55,7 +55,7 @@ def index(request):
         'next_match': Match.next_match(),
     }
 
-    set_current_player(request,context)
+    set_current_player(request, context)
 
     return render(request, 'core/index.html', context)
 
@@ -69,7 +69,7 @@ def match(request, match_id):
     match = get_object_or_404(Match, pk=match_id)
     context = {'match': match}
 
-    set_current_player(request,context)
+    set_current_player(request, context)
 
     player = context.get('player', None)
     context['can_join'] = player != None and player.can_join(match)
@@ -102,7 +102,7 @@ def join_match(request, match_id, player_id):
         match_player = MatchPlayer(match=match, player=player)
         match_player.save()
         sent_mails = mailer.send_join_mails(match, player)
-        logger.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
+        LOGGER.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
 
     # TODO: add success/error/already-joined messages and player id
     return HttpResponseRedirect(match_url(match, player))
@@ -134,7 +134,7 @@ def leave_match(request, match_id, player_id):
         mp.delete()
         # TODO: send emails asyncronously
         sent_mails = mailer.send_leave_mails(match, player)
-        logger.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
+        LOGGER.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
 
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
@@ -162,7 +162,7 @@ def add_guest(request, match_id):
     guest = match.guests.create(inviting_player=player, name=request.POST['guest'])
     # TODO: send emails asyncronously
     sent_mails = mailer.send_invite_guest_mails(match, player, guest)
-    logger.info('%s invited %s to %s, sent %i email(s)' % (player, guest, match, sent_mails))
+    LOGGER.info('%s invited %s to %s, sent %i email(s)' % (player, guest, match, sent_mails))
 
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
@@ -181,9 +181,9 @@ def send_mail(request):
         player = get_object_or_404(Player, pk=request.GET['player'])
         mailer.invite_message(match, player).send() # just for debugging
         sent_emails = 1
-        logger.info('Sending manual invite email for %s to join %s' % (player, match))
+        LOGGER.info('Sending manual invite email for %s to join %s' % (player, match))
     else:
         sent_emails = tasks.create_matches_and_email_players()
-        logger.info('Created week matches and sent %i join email(s)' % (sent_emails))
+        LOGGER.info('Created week matches and sent %i join email(s)' % (sent_emails))
 
     return HttpResponse('Emails sent: %i' % sent_emails)

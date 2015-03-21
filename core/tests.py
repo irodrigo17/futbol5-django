@@ -15,7 +15,7 @@ from urllib.parse import urljoin
 from django.core import mail
 
 from core.models import Player, Match, MatchPlayer, Guest
-from core import tasks, mailer, views
+from core import tasks, mailer
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
 
 # Model tests
