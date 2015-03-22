@@ -1,8 +1,11 @@
+"""
+Module containing recurring tasks and helper functions.
+"""
+
 import logging
 from datetime import datetime, timedelta
 from core.models import Player, Match
 from core import mailer
-
 
 
 DEFAULT_PLACE = 'River'
