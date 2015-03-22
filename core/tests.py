@@ -438,7 +438,7 @@ class ViewTests(TestCase):
         player = Player.objects.create(name='My Player', email='my@player.com')
 
         c = Client()
-        response = c.get('/sendmail/', {'player': player.id, 'match': match.id})
+        response = c.post('/sendmail/', {'player': player.id, 'match': match.id})
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(mail.outbox), 1, "Should send one email")
         self.assertTrue('/matches/%i/join/%i/' % (match.id, player.id) in mail.outbox[0].body)
@@ -452,7 +452,7 @@ class ViewTests(TestCase):
         prev_matches = Match.objects.count()
 
         c = Client()
-        response = c.get('/sendmail/')
+        response = c.post('/sendmail/')
 
         matches = Match.objects.count()
         self.assertTrue(matches > prev_matches)

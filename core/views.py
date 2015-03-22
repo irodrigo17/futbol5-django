@@ -5,7 +5,7 @@ Django views module.
 import logging
 from datetime import datetime
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotAllowed
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
 from core.urlhelper import match_url
@@ -48,6 +48,9 @@ def index(request):
     """
     View for the index page of the site.
     """
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     context = {
         'match_count': Match.objects.count(),
         'player_count': Player.objects.count(),
@@ -66,6 +69,9 @@ def match(request, match_id):
     If the match does not exist returns 404.
     Any player stored in the session is set to the context.
     """
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     match = get_object_or_404(Match, pk=match_id)
     context = {'match': match}
 
@@ -87,6 +93,9 @@ def join_match(request, match_id, player_id):
     If player was already in the match it does nothing.
     Emails are sent to the match players.
     """
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     # TODO: should probably be POST to /matchplayers/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
@@ -118,6 +127,9 @@ def leave_match(request, match_id, player_id):
     If player had not joined the match, nothing happens.
     Emails are sent to the match players.
     """
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     # TODO: should probably be DELETE to /matchplayers/<id>/ to be more RESTful,
     # but this get is way more email-friendly :)
     match = get_object_or_404(Match, pk=match_id)
@@ -149,6 +161,9 @@ def add_guest(request, match_id):
     Returns 400 if the match has already been played.
     Emails are sent to the match players.
     """
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
     # TODO: should probably be a POST to /guests/ to be more RESTful
     match = get_object_or_404(Match, pk=match_id)
 
@@ -174,11 +189,13 @@ def send_mail(request):
     This view is hit daily by the scheduler to create matches when needed,
     and send email notifications to players.
     """
-    # TODO: should be a POST and secured
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
     sent_emails = 0
-    if 'match' in request.GET and 'player' in request.GET:
-        match = get_object_or_404(Match, pk=request.GET['match'])
-        player = get_object_or_404(Player, pk=request.GET['player'])
+    if 'match' in request.POST and 'player' in request.POST:
+        match = get_object_or_404(Match, pk=request.POST['match'])
+        player = get_object_or_404(Player, pk=request.POST['player'])
         mailer.invite_message(match, player).send() # just for debugging
         sent_emails = 1
         LOGGER.info('Sending manual invite email for %s to join %s' % (player, match))
