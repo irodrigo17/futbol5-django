@@ -1,0 +1,10 @@
+{% include 'core/partial_email_header.html' %}
+
+<p>
+  Hay {{ match.player_count }} jugadores anotados para el partido del
+  <a href="{{ match_url }}">
+    {{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}
+  </a>
+</p>
+
+{% include 'core/partial_email_footer.html' %}

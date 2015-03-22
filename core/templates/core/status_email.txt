@@ -1,0 +1,8 @@
+{% include 'core/partial_email_header.txt' %}
+
+Hay {{ match.player_count }} jugadores anotados para el partido del
+{{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}.
+
+Acá está la lista actualizada: {{ match_url }}
+
+{% include 'core/partial_email_footer.txt' %}

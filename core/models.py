@@ -63,6 +63,12 @@ class Match(models.Model):
         """
         return Match.objects.filter(date__gte=datetime.now()).order_by('date').first()
 
+    def player_count(self):
+        """
+        Returns the total number of players in the match, including guests.
+        """
+        return self.players.count() + self.guests.count()
+
 
 class MatchPlayer(models.Model):
     """

@@ -162,6 +162,25 @@ class MatchTests(TestCase):
         self.assertTrue(next_match == m4)
 
 
+    def test_player_count(self):
+        """
+        player_count should return the total number of players in the match, including guests.
+        """
+        match = Match.objects.create(date=datetime.now(), place='Player Count')
+        self.assertEquals(match.player_count(), 0)
+
+        p1 = Player.objects.create(name='Player One', email='p1@email.com')
+        match.matchplayer_set.create(player=p1)
+        self.assertEquals(match.player_count(), 1)
+
+        p2 = Player.objects.create(name='Player Two', email='p2@email.com')
+        match.matchplayer_set.create(player=p2)
+        self.assertEquals(match.player_count(), 2)
+
+        match.guests.create(name='Guest', inviting_player=p1)
+        self.assertEquals(match.player_count(), 3)
+
+
 # View tests
 
 class ViewTests(TestCase):
@@ -430,36 +449,13 @@ class ViewTests(TestCase):
         self.assertEquals(len(mail.outbox), 0)
 
 
-    def test_send_mail_view_debug(self):
-        """
-        Test debug send mail view.
-        """
-        match = Match.objects.create(date=datetime.now(), place='There')
-        player = Player.objects.create(name='My Player', email='my@player.com')
-
-        c = Client()
-        response = c.post('/sendmail/', {'player': player.id, 'match': match.id})
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(mail.outbox), 1, "Should send one email")
-        self.assertTrue('/matches/%i/join/%i/' % (match.id, player.id) in mail.outbox[0].body)
-        self.assertTrue('/matches/%i/leave/%i/' % (match.id, player.id) in mail.outbox[0].body)
-
-
     def test_send_mail_view(self):
         """
         Test send mail view.
         """
-        prev_matches = Match.objects.count()
-
         c = Client()
         response = c.post('/sendmail/')
-
-        matches = Match.objects.count()
-        self.assertTrue(matches > prev_matches)
-
-        expected_emails = (matches - prev_matches) * Player.objects.count()
-        self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(mail.outbox), expected_emails, "Should send one email per match per player")
+        self.assertTrue(response.status_code == 201 or response.status_code == 204)
 
 
     def test_current_player(self):
@@ -496,7 +492,8 @@ class TasksTests(TestCase):
 
     def assert_datetime_equals(self, date1, date2, new_day):
         """
-        Helper method for comparing two datetimes.
+        Helper method for comparing two datetimes, where date2 is equal to date1
+        except for the day which should be equal to new_day.
         """
         self.assertEquals(date2.year, date1.year)
         self.assertEquals(date2.month, date1.month)
@@ -509,76 +506,149 @@ class TasksTests(TestCase):
 
     def test_next_weekday(self):
         """
-        Test next weekday.
+        next_weekday should return the date corresponding to the next given
+        weekday, starting from the given base date.
         """
         wed = datetime(2015, 2, 11, 18, 39, 59, 1234)
 
+        next_wed = tasks.next_weekday(wed, 2)
+        self.assert_datetime_equals(wed, next_wed, 11)
+
         next_fri = tasks.next_weekday(wed, 4)
         self.assert_datetime_equals(wed, next_fri, 13)
-
-        next_wed = tasks.next_weekday(wed, 2)
-        self.assert_datetime_equals(wed, next_wed, 18)
 
         next_mon = tasks.next_weekday(wed, 0)
         self.assert_datetime_equals(wed, next_mon, 16)
 
 
-    def test_default_weekdays_and_times(self):
+    def test_set_hour(self):
         """
-        Test default weekdays and times.
+        set_hour should set the given hour to the given date and reset the rest
+        of the time components to zero.
         """
-        weekdays = tasks.default_weekdays_and_times()
-        self.assertEquals(weekdays[0]['weekday'], 2)
-        self.assertEquals(weekdays[0]['hour'], 19)
-        self.assertEquals(weekdays[1]['weekday'], 4)
-        self.assertEquals(weekdays[1]['hour'], 20)
+        date = datetime(2015, 2, 11, 18, 39, 59, 1234)
+        date = tasks.set_hour(date, 7)
+        expected_date = datetime(2015, 2, 11, 7, 0, 0, 0)
+        self.assertEquals(date, expected_date)
 
 
-    def test_week_dates(self):
+    def test_find_or_create_match(self):
         """
-        Test week dates.
+        Should find or create a match for the given date and send proper emails.
         """
-        now = datetime.now()
-        weekdays_and_times = tasks.default_weekdays_and_times()
+        date = datetime(2015, 3, 23, 7, 0, 0, 0)
 
-        week_dates = tasks.week_dates(now, weekdays_and_times)
+        # create match
+        Player.objects.create(name='Player One', email='p1@email.com')
+        Player.objects.create(name='Player Two', email='p2@email.com')
+        Player.objects.create(name='Player Three', email='p3@email.com')
+        Player.objects.create(name='Player Four', email='p4@email.com')
 
-        self.assertEquals(len(week_dates), len(weekdays_and_times))
+        match_count = Match.objects.count()
+        match = tasks.find_or_create_match(date)
 
-        for i in range(len(week_dates)):
-            wd = weekdays_and_times[i]
-            expected_date = tasks.next_weekday(now, wd['weekday'])
-            expected_hour = wd['hour']
-            date = week_dates[i]
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, date)
+        self.assertEquals(Match.objects.count(), match_count + 1)
+        self.assertEquals(len(mail.outbox), Player.objects.count())
+        mail.outbox = []
 
-            self.assertEquals(date.year, expected_date.year)
-            self.assertEquals(date.month, expected_date.month)
-            self.assertEquals(date.day, expected_date.day)
-            self.assertEquals(date.hour, expected_hour)
-            self.assertEquals(date.minute, 0)
-            self.assertEquals(date.second, 0)
-            self.assertEquals(date.microsecond, 0)
+        # find match
+        p1 = Player.objects.create(name='Match Player One', email='mp1@email.com')
+        match.matchplayer_set.create(player=p1)
+        p2 = Player.objects.create(name='Match Player Two', email='mp2@email.com')
+        match.matchplayer_set.create(player=p2)
+
+        match_count = Match.objects.count()
+        match = tasks.find_or_create_match(date)
+
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, date)
+        self.assertEquals(Match.objects.count(), match_count)
+        self.assertEquals(len(mail.outbox), match.players.count())
 
 
-    def test_default_place(self):
+    def test_create_match_or_send_status(self):
         """
-        Test default place.
+        Test the create_match_or_send_status function.
+        Should find or create a match for next Wednesday or next Friday and send
+        proper emails on weekdays, shoud rest on weekends.
         """
-        self.assertEquals(tasks.default_place(), 'River')
+        # create players
+        Player.objects.create(name='Player One', email='p1@email.com')
+        Player.objects.create(name='Player Two', email='p2@email.com')
+        Player.objects.create(name='Player Three', email='p3@email.com')
+        Player.objects.create(name='Player Four', email='p4@email.com')
 
+        # Monday 7:15 AM
+        match_count = Match.objects.count()
 
-    def test_create_matches(self):
-        """
-        Test the create_matches function.
-        """
-        expected_dates = tasks.week_dates(datetime.now(), tasks.default_weekdays_and_times())
-        expected_place = tasks.default_place()
-        matches = tasks.create_matches()
-        self.assertEquals(len(matches), len(expected_dates))
-        for i in range(len(matches)):
-            self.assertEquals(matches[i].date, expected_dates[i])
-            self.assertEquals(matches[i].place, expected_place)
+        date = datetime(2015, 3, 23, 7, 15, 0, 0)
+        match = tasks.create_match_or_send_status(date)
 
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, datetime(2015, 3, 25, 19, 0, 0, 0))
+        self.assertEquals(Match.objects.count(), match_count + 1)
+        self.assertEquals(len(mail.outbox), Player.objects.count())
+        mail.outbox = []
+
+        # add players
+        p1 = Player.objects.create(name='Match Player One', email='mp1@email.com')
+        match.matchplayer_set.create(player=p1)
+        p2 = Player.objects.create(name='Match Player Two', email='mp2@email.com')
+        match.matchplayer_set.create(player=p2)
+
+        # Wednesday 3:00 PM
+        match_count = Match.objects.count()
+
+        date = datetime(2015, 3, 25, 15, 0, 0, 0)
+        match = tasks.create_match_or_send_status(date)
+
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, datetime(2015, 3, 25, 19, 0, 0, 0))
+        self.assertEquals(Match.objects.count(), match_count)
+        self.assertEquals(len(mail.outbox), match.players.count())
+        mail.outbox = []
+
+        # Thursday  7:00 AM
+        match_count = Match.objects.count()
+
+        date = datetime(2015, 3, 26, 7, 0, 0, 0)
+        match = tasks.create_match_or_send_status(date)
+
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, datetime(2015, 3, 27, 20, 0, 0, 0))
+        self.assertEquals(Match.objects.count(), match_count + 1)
+        self.assertEquals(len(mail.outbox), Player.objects.count())
+        mail.outbox = []
+
+        # add players
+        fp1 = Player.objects.create(name='Friday One', email='fri1@email.com')
+        match.matchplayer_set.create(player=fp1)
+        fp2 = Player.objects.create(name='Friday Two', email='fri2@email.com')
+        match.matchplayer_set.create(player=fp2)
+
+        # Friday  7:00 AM
+        match_count = Match.objects.count()
+
+        date = datetime(2015, 3, 27, 7, 0, 0, 0)
+        match = tasks.create_match_or_send_status(date)
+
+        self.assertTrue(match != None)
+        self.assertEquals(match.date, datetime(2015, 3, 27, 20, 0, 0, 0))
+        self.assertEquals(Match.objects.count(), match_count)
+        self.assertEquals(len(mail.outbox), match.players.count())
+        mail.outbox = []
+
+        # Sunday
+        match_count = Match.objects.count()
+
+        date = datetime(2015, 3, 29, 2, 0, 0, 0)
+        match = tasks.create_match_or_send_status(date)
+
+        self.assertTrue(match == None)
+        self.assertEquals(Match.objects.count(), match_count)
+        self.assertEquals(len(mail.outbox), 0)
 
 
 # Mailer tests
@@ -618,17 +688,15 @@ class MailerTests(TestCase):
         """
         Test sending invite messages.
         """
-        match1 = Match.objects.create(date=datetime.now(), place='Here')
-        match2 = Match.objects.create(date=datetime.now(), place='There')
+        match = Match.objects.create(date=datetime.now(), place='Here')
         player1 = Player.objects.create(name='Juan Pedro', email='jp@fasola.com')
         player2 = Player.objects.create(name='Juan Ramon', email='jr@carrasco.com')
 
-        matches = [match1, match2]
         players = [player1, player2]
 
-        mailer.send_invite_mails(matches, players)
+        mailer.send_invite_mails(match, players)
 
-        self.assertEquals(len(mail.outbox), len(matches) * len(players))
+        self.assertEquals(len(mail.outbox), len(players))
 
 
     def test_leave_match_message(self):
@@ -739,7 +807,7 @@ class MailerTests(TestCase):
 
     def test_send_invite_guest_mails(self):
         """
-        Test sengind guest invite messages.
+        Test sending guest invite messages.
         """
         match = Match.objects.create(date=datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
@@ -755,6 +823,43 @@ class MailerTests(TestCase):
         self.assertEquals(msg.subject, 'Fobal')
         self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
         self.assertEquals(msg.to, [mailer.email_address(player)])
+
+
+    def test_status_message(self):
+        """
+        Status message should contain the number of players in the match and
+        the match URL.
+        """
+        match = Match.objects.create(date=datetime.now(), place='Status')
+        p1 = Player.objects.create(name='Status One', email='status1@email.com')
+        match.matchplayer_set.create(player=p1)
+        p2 = Player.objects.create(name='Status Two', email='status2@email.com')
+        match.matchplayer_set.create(player=p2)
+        g = match.guests.create(name='Guest One', inviting_player=p1)
+
+        msg = mailer.status_message(match, p1)
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(p1)])
+        self.assertTrue('Hola %s' % p1.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(match_url(match, p1) in msg.body)
+        self.assertTrue('%i jugadores' % 3 in msg.body)
+
+
+    def test_send_status_mails(self):
+        """
+        Test sending status messages.
+        """
+        match = Match.objects.create(date=datetime.now(), place='Status Field')
+        p1 = Player.objects.create(name='Status One', email='status1@email.com')
+        match.matchplayer_set.create(player=p1)
+        p2 = Player.objects.create(name='Status Two', email='status2@email.com')
+        match.matchplayer_set.create(player=p2)
+        g = match.guests.create(name='Guest One', inviting_player=p1)
+
+        mailer.send_status_mails(match)
+        self.assertEquals(len(mail.outbox), 2)
 
 
 # URL helper tests

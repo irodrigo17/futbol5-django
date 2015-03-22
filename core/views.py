@@ -6,6 +6,7 @@ import logging
 from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
 from core.urlhelper import match_url
@@ -183,6 +184,7 @@ def add_guest(request, match_id):
     return HttpResponseRedirect(match_url(match, player))
 
 
+@csrf_exempt
 def send_mail(request):
     """
     View for sending emails.
@@ -192,15 +194,9 @@ def send_mail(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    sent_emails = 0
-    if 'match' in request.POST and 'player' in request.POST:
-        match = get_object_or_404(Match, pk=request.POST['match'])
-        player = get_object_or_404(Player, pk=request.POST['player'])
-        mailer.invite_message(match, player).send() # just for debugging
-        sent_emails = 1
-        LOGGER.info('Sending manual invite email for %s to join %s' % (player, match))
-    else:
-        sent_emails = tasks.create_matches_and_email_players()
-        LOGGER.info('Created week matches and sent %i join email(s)' % (sent_emails))
+    match = tasks.create_match_or_send_status(datetime.now())
 
-    return HttpResponse('Emails sent: %i' % sent_emails)
+    if match != None:
+        return HttpResponse(status=201)
+    else:
+        return HttpResponse(status=204)

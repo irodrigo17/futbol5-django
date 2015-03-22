@@ -39,18 +39,17 @@ def invite_message(match, player):
     return msg
 
 
-def send_invite_mails(matches, players):
+def send_invite_mails(match, players):
     """
-    Send emails to invite the given players to the given matches.
+    Send emails to invite the given players to the given match.
     This is a convenience method that uses invite_message to create and send
     messages for all players.
     Returns the number of emails sent.
     """
     sent_mails = 0
     for player in players:
-        for match in matches:
-            invite_message(match, player).send()
-            sent_mails += 1
+        invite_message(match, player).send()
+        sent_mails += 1
     return sent_mails
 
 
@@ -163,4 +162,38 @@ def send_invite_guest_mails(match, inviting_player, guest):
         if player != inviting_player:
             invite_guest_message(match, player, inviting_player, guest).send()
             sent_mails += 1
+    return sent_mails
+
+
+def status_message(match, player):
+    """
+    Creates and returns an email message for the given player with the status
+    of the given match.
+    Contains plain text and HTML versions in the body, and a link to the match.
+    """
+    context = Context({
+        'player': player,
+        'match': match,
+        'match_url': absolute_url(match_url(match, player)),
+    })
+
+    text = get_template('core/status_email.txt').render(context)
+    html = get_template('core/status_email.html').render(context)
+
+    address = email_address(player)
+    msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
+    msg.attach_alternative(html, "text/html")
+    return msg
+
+
+def send_status_mails(match):
+    """
+    Send email notifications to all match players with the status of the match.
+    Convenience method that calls status_mail and returns the number of
+    emails sent.
+    """
+    sent_mails = 0
+    for player in match.players.all():
+        status_message(match, player).send()
+        sent_mails += 1
     return sent_mails
