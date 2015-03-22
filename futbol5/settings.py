@@ -27,7 +27,7 @@ DEBUG = bool(os.environ.get('DJANGO_DEBUG', False))
 
 TEMPLATE_DEBUG = bool(os.environ.get('DJANGO_TEMPLATE_DEBUG', False))
 
-ALLOWED_HOSTS = ['fobal.herokuapp.com']
+ALLOWED_HOSTS = ['fobal.herokuapp.com', 'fobal-stage.herokuapp.com']
 
 
 # Application definition
