@@ -56,7 +56,7 @@ def find_or_create_match(date):
         sent_mails = mailer.send_invite_mails(match, Player.objects.all())
         LOGGER.info('Created match for %s and sent %i invitation emails' % (match.date, sent_mails))
     else:
-        sent_mails = mailer.send_status_mails(match)
+        sent_mails = mailer.send_status_mails(match, Player.objects.all())
         LOGGER.info('Sent %i status messages for next match: %s' % (sent_mails, match.date))
 
     return match

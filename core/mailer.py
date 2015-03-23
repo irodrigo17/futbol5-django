@@ -193,14 +193,14 @@ def status_message(match, player):
     return msg
 
 
-def send_status_mails(match):
+def send_status_mails(match, players):
     """
     Send email notifications to all match players with the status of the match.
     Convenience method that calls status_mail and returns the number of
     emails sent.
     """
     messages = []
-    for player in match.players.all():
+    for player in players:
         messages.append(status_message(match, player))
     send_mails(messages)
     return len(messages)

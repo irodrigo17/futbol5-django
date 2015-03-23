@@ -573,7 +573,7 @@ class TasksTests(TestCase):
         self.assertTrue(match != None)
         self.assertEquals(match.date, date)
         self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), match.players.count())
+        self.assertEquals(len(mail.outbox), Player.objects.count())
 
 
     def test_create_match_or_send_status(self):
@@ -615,7 +615,7 @@ class TasksTests(TestCase):
         self.assertTrue(match != None)
         self.assertEquals(match.date, datetime(2015, 3, 25, 19, 0, 0, 0))
         self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), match.players.count())
+        self.assertEquals(len(mail.outbox), Player.objects.count())
         mail.outbox = []
 
         # Thursday  7:00 AM
@@ -645,7 +645,7 @@ class TasksTests(TestCase):
         self.assertTrue(match != None)
         self.assertEquals(match.date, datetime(2015, 3, 27, 20, 0, 0, 0))
         self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), match.players.count())
+        self.assertEquals(len(mail.outbox), Player.objects.count())
         mail.outbox = []
 
         # Sunday
@@ -861,12 +861,9 @@ class MailerTests(TestCase):
         """
         match = Match.objects.create(date=datetime.now(), place='Status Field')
         p1 = Player.objects.create(name='Status One', email='status1@email.com')
-        match.matchplayer_set.create(player=p1)
         p2 = Player.objects.create(name='Status Two', email='status2@email.com')
-        match.matchplayer_set.create(player=p2)
-        g = match.guests.create(name='Guest One', inviting_player=p1)
 
-        mailer.send_status_mails(match)
+        mailer.send_status_mails(match, Player.objects.all())
         self.assertEquals(len(mail.outbox), 2)
 
 
