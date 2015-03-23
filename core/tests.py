@@ -224,6 +224,10 @@ class ViewTests(TestCase):
         self.assertFalse('player' in response.context)
         self.assertEquals(response.templates[0].name, 'core/match.html')
         self.assertFalse("<form action=\"addguest/\" method=\"post\">" in str(response.content))
+        self.assertFalse("Juego!" in str(response.content))
+        self.assertFalse('can_join' in response.context)
+        self.assertFalse('join_match_url' in response.context)
+        self.assertFalse('leave_match_url' in response.context)
 
 
     def test_match_view_with_valid_player(self):
@@ -231,7 +235,7 @@ class ViewTests(TestCase):
         Match view with a valid player should render properly.
         """
         c = Client()
-        match = Match.objects.create(date=datetime.now(), place="La Cancha")
+        match = Match.objects.create(date=datetime.now() + timedelta(days=1), place="La Cancha")
         player = Player.objects.create(name='Test Match View', email="test@matchview.com")
         response = c.get('/matches/%d/' % match.id, {'player_id': player.id})
         self.assertEquals(response.status_code, 200)
@@ -239,6 +243,10 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['player'], player)
         self.assertEquals(response.templates[0].name, 'core/match.html')
         self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
+        self.assertTrue("Juego" in str(response.content))
+        self.assertTrue('can_join' in response.context)
+        self.assertTrue('join_match_url' in response.context)
+        self.assertTrue('leave_match_url' in response.context)
 
 
     def test_match_view_with_invalid_player(self):
