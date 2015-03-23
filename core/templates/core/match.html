@@ -10,17 +10,27 @@
       <th>#</th>
       <th>Nombre</th>
       <th>Fecha</th>
+      <th></th>
     </tr>
     {% for mp in match.matchplayer_set.all %}
     <tr>
       <td>{{ forloop.counter }}</td>
       <td>{{ mp.player.name }}</td>
       <td>{{ mp.join_date | date:"JOIN_DATE_FORMAT" }}</td>
+      <td>
+        {% if player != None and player == mp.player %}
+        <a href="{{ leave_match_url }}"><strong>No juego</strong></a>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </table>
 {% else %}
   <p>Todavía no se ha anotado nadie...</p>
+{% endif %}
+
+{% if player != None and can_join %}
+<p><a href="{{ join_match_url }}"><strong>Juego!</strong></a></p>
 {% endif %}
 
 <h3>Invitados</h3>

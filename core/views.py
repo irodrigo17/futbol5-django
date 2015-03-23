@@ -9,9 +9,11 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotAllow
 from django.views.decorators.csrf import csrf_exempt
 from core.models import Match, Player, MatchPlayer
 from core import mailer, tasks
-from core.urlhelper import match_url
+from core.urlhelper import match_url, join_match_url, leave_match_url
+
 
 LOGGER = logging.getLogger(__name__)
+
 
 # TODO: use generic views?
 
@@ -79,7 +81,10 @@ def match(request, match_id):
     set_current_player(request, context)
 
     player = context.get('player', None)
-    context['can_join'] = player != None and player.can_join(match)
+    if player != None:
+        context['can_join'] = player.can_join(match)
+        context['join_match_url'] = join_match_url(match, player)
+        context['leave_match_url'] = leave_match_url(match, player)
 
     return render(request, 'core/match.html', context)
 
