@@ -2,10 +2,17 @@
 Mailer module for sending emails.
 """
 
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import get_connection, EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
+
+
+def send_mails(messages):
+    """
+    Sends the given email messages using the default email backend.
+    """
+    get_connection().send_messages(messages)
 
 
 def email_address(player):
@@ -46,11 +53,11 @@ def send_invite_mails(match, players):
     messages for all players.
     Returns the number of emails sent.
     """
-    sent_mails = 0
+    messages = []
     for player in players:
-        invite_message(match, player).send()
-        sent_mails += 1
-    return sent_mails
+        messages.append(invite_message(match, player))
+    send_mails(messages)
+    return len(messages)
 
 
 def leave_match_message(match, player, leaving_player):
@@ -82,12 +89,12 @@ def send_leave_mails(match, leaving_player):
     This is a convenience method that uses leave_match_message to create messages.
     Returns the number of emails sent.
     """
-    sent_mails = 0
+    messages = []
     for player in match.players.all():
         if player != leaving_player:
-            leave_match_message(match, player, leaving_player).send()
-            sent_mails += 1
-    return sent_mails
+            messages.append(leave_match_message(match, player, leaving_player))
+    send_mails(messages)
+    return len(messages)
 
 
 def join_match_message(match, player, joining_player):
@@ -119,12 +126,12 @@ def send_join_mails(match, joining_player):
     This is a convenience method that uses join_match_message and returns the
     number of emails sent.
     """
-    sent_mails = 0
+    messages = []
     for player in match.players.all():
         if player != joining_player:
-            join_match_message(match, player, joining_player).send()
-            sent_mails += 1
-    return sent_mails
+            messages.append(join_match_message(match, player, joining_player))
+    send_mails(messages)
+    return len(messages)
 
 
 def invite_guest_message(match, player, inviting_player, guest):
@@ -157,12 +164,12 @@ def send_invite_guest_mails(match, inviting_player, guest):
     Convenience method that calls invite_guest_message and returns the number of
     emails sent.
     """
-    sent_mails = 0
+    messages = []
     for player in match.players.all():
         if player != inviting_player:
-            invite_guest_message(match, player, inviting_player, guest).send()
-            sent_mails += 1
-    return sent_mails
+            messages.append(invite_guest_message(match, player, inviting_player, guest))
+    send_mails(messages)
+    return len(messages)
 
 
 def status_message(match, player):
@@ -192,8 +199,8 @@ def send_status_mails(match):
     Convenience method that calls status_mail and returns the number of
     emails sent.
     """
-    sent_mails = 0
+    messages = []
     for player in match.players.all():
-        status_message(match, player).send()
-        sent_mails += 1
-    return sent_mails
+        messages.append(status_message(match, player))
+    send_mails(messages)
+    return len(messages)
