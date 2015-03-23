@@ -77,13 +77,14 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Keep player info (cookies)
 - [x] Expose a RESTful API using [Django Rest Framework](http://www.django-rest-framework.org)
 - [x] Send daily email notifications with the status of the next match
-- [ ] Fix next match (probably a timezone issue)
-- [ ] Use [AngularJS](https://angularjs.org) for the frontend
+- [x] Players can join or leave a match from the web
+- [ ] Emails are sent asynchronously
 - [ ] Players can delete invited friends from the web (notify players)
-- [ ] Players can join or leave a match from the web
+- [ ] Fix next match (probably a timezone issue)
+- [ ] Add links to RESTful API
+- [ ] Use [AngularJS](https://angularjs.org) for the frontend
 - [ ] Send mails when models are saved (so Django admin and API work)
 - [ ] Add flash messages when joining/leaving/inviting guests
-- [ ] Add static code analysis (PEP8)
 - [ ] Add minimum security (server generated token sent in email links instead of player id)
 - [ ] Send email notifications to joining/leaving players too, and to players inviting guests
 - [ ] Cancel matches (notify players and save stats)
@@ -91,6 +92,7 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Edit match time and place (notify players)
 - [ ] Store player first and last names separately. Use first name only when appropriate (in emails for example)
 - [ ] Improve error handling
+- [ ] Add static code analysis (PEP8)
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
 - [ ] Encourage players to join an upcoming match if needed
