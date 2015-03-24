@@ -78,8 +78,8 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Expose a RESTful API using [Django Rest Framework](http://www.django-rest-framework.org)
 - [x] Send daily email notifications with the status of the next match
 - [x] Players can join or leave a match from the web
+- [x] Players can delete invited friends from the web (notify players)
 - [ ] Emails are sent asynchronously
-- [ ] Players can delete invited friends from the web (notify players)
 - [ ] Fix next match (probably a timezone issue)
 - [ ] Add links to RESTful API
 - [ ] Use [AngularJS](https://angularjs.org) for the frontend
