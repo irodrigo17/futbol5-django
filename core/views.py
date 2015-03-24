@@ -7,6 +7,7 @@ from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 from core.models import Match, Player, MatchPlayer, Guest
 from core import mailer, tasks
 from core.urlhelper import match_url, join_match_url, leave_match_url
@@ -119,6 +120,8 @@ def join_match(request, match_id, player_id):
         sent_mails = mailer.send_join_mails(match, player)
         LOGGER.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
 
+    messages.success(request, '%s: Estás anotado para el partido!' % player.name)
+
     # TODO: add success/error/already-joined messages and player id
     return HttpResponseRedirect(match_url(match, player))
 
@@ -154,6 +157,8 @@ def leave_match(request, match_id, player_id):
         sent_mails = mailer.send_leave_mails(match, player)
         LOGGER.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
 
+    messages.success(request, '%s: Te bajaste del partido, gracias por avisar!' % player.name)
+
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
 
@@ -185,6 +190,8 @@ def add_guest(request, match_id):
     sent_mails = mailer.send_invite_guest_mails(match, player, guest)
     LOGGER.info('%s invited %s to %s, sent %i email(s)' % (player, guest, match, sent_mails))
 
+    messages.success(request, '%s: Tu amigo quedó anotado!' % player.name)
+
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
 
@@ -212,6 +219,8 @@ def remove_guest(request, guest_id):
 
     sent_mails = mailer.send_remove_guest_mails(guest)
     LOGGER.info('%s uninvited %s from %s, sent %i email(s)' % (guest.inviting_player, guest, guest.match, sent_mails))
+
+    messages.success(request, '%s: Tu amigo no juega, gracias por avisar!' % guest.inviting_player.name)
 
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(guest.match, None))
