@@ -1,0 +1,8 @@
+{% include 'core/partial_email_header.txt' %}
+
+{{ guest.name }}, el amigo de {{ guest.inviting_player.name }}, no juega el
+partido del {{ guest.match.date | date:"MATCH_DATE_FORMAT" }} en {{ guest.match.place }}.
+
+Acá está la lista actualizada: {{ match_url }}
+
+{% include 'core/partial_email_footer.txt' %}

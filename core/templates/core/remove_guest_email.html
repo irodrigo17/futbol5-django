@@ -1,0 +1,11 @@
+{% include 'core/partial_email_header.html' %}
+
+<p>
+  {{ guest.name }}, el amigo de {{ guest.inviting_player.name }}, no juga el
+  partido del {{ guest.match.date | date:"MATCH_DATE_FORMAT" }} en {{ guest.match.place }}.
+</p>
+<p>
+  Acá está la <a href="{{ match_url }}">lista actualizada</a>
+</p>
+
+{% include 'core/partial_email_footer.html' %}
