@@ -172,6 +172,42 @@ def send_invite_guest_mails(match, inviting_player, guest):
     return len(messages)
 
 
+def remove_guest_message(guest, player):
+    """
+    Creates and returns an email message to notify the given player about the
+    inviting_player removing the guest from the match.
+    Contains plain text and HTML versions of the body and a link to the match.
+    """
+    context = Context({
+        'player': player,
+        'match_url': absolute_url(match_url(guest.match, player)),
+        'guest': guest,
+    })
+
+    text = get_template('core/remove_guest_email.txt').render(context)
+    html = get_template('core/remove_guest_email.html').render(context)
+
+    address = email_address(player)
+    msg = EmailMultiAlternatives('Fobal', text, 'Fobal <noreply@fobal.com>', [address])
+    msg.attach_alternative(html, "text/html")
+    return msg
+
+
+def send_remove_guest_mails(guest):
+    """
+    Send email notifications to all match players but the inviting_player in the given
+    match to inform that the given guest has been removed from the match.
+    Convenience method that calls remove_guest_message and returns the number of
+    emails sent.
+    """
+    messages = []
+    for player in guest.match.players.all():
+        if player != guest.inviting_player:
+            messages.append(remove_guest_message(guest, player))
+    send_mails(messages)
+    return len(messages)
+
+
 def status_message(match, player):
     """
     Creates and returns an email message for the given player with the status

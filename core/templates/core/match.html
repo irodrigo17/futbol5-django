@@ -41,6 +41,7 @@
       <th>Nombre</th>
       <th>Amigo de</th>
       <th>Fecha</th>
+      <th></th>
     </tr>
     {% for guest in match.guests.all %}
     <tr>
@@ -48,6 +49,12 @@
       <td>{{ guest.name }}</td>
       <td>{{ guest.inviting_player.name }}</td>
       <td>{{ guest.inviting_date | date:"JOIN_DATE_FORMAT" }}</td>
+      <td>
+        {% if guest.inviting_player == player %}
+        {% url 'core:remove_guest' guest_id=guest.id as remove_guest_url %}
+        <a href="{{ remove_guest_url }}"><strong>No juega</strong></a>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </table>

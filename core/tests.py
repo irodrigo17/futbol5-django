@@ -249,6 +249,32 @@ class ViewTests(TestCase):
         self.assertTrue('leave_match_url' in response.context)
 
 
+    def test_match_view_with_guest(self):
+        """
+        Player should be able to remove guests invited by himself.
+        """
+        c = Client()
+        match = Match.objects.create(date=datetime.now() + timedelta(days=1), place="La Cancha")
+        player1 = Player.objects.create(name='Test Match View 1', email="test1@matchview.com")
+        player2 = Player.objects.create(name='Test Match View 2', email="test2@matchview.com")
+        match.matchplayer_set.create(player=player1)
+        match.matchplayer_set.create(player=player2)
+        guest1 = Guest.objects.create(name='Guest1', inviting_player=player1, match=match)
+        guest2 = Guest.objects.create(name='Guest2', inviting_player=player2, match=match)
+        response = c.get('/matches/%d/' % match.id, {'player_id': player1.id})
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.context['match'], match)
+        self.assertEquals(response.context['player'], player1)
+        self.assertEquals(response.templates[0].name, 'core/match.html')
+        self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
+        self.assertTrue("No juego" in str(response.content))
+        self.assertTrue('can_join' in response.context)
+        self.assertTrue('join_match_url' in response.context)
+        self.assertTrue('leave_match_url' in response.context)
+        self.assertTrue('removeguest/%i/' % guest1.id in str(response.content))
+        self.assertFalse('removeguest/%i/' % guest2.id in str(response.content))
+
+
     def test_match_view_with_invalid_player(self):
         """
         Match view with an invalid player should render as if there were no player.
@@ -457,13 +483,65 @@ class ViewTests(TestCase):
         self.assertEquals(len(mail.outbox), 0)
 
 
+    def test_remove_guest(self):
+        """
+        The guest should be removed from the match if conditions are met.
+        """
+
+        # bad method
+        c = Client()
+        response = c.post('/removeguest/123/')
+        self.assertEquals(response.status_code, 405)
+
+        # bad guest_id
+        response = c.get('/removeguest/1234/')
+        self.assertEquals(response.status_code, 404)
+
+        # match has already been played
+        match1 = Match.objects.create(date=datetime.now() - timedelta(days=1), place='Field')
+        player1 = Player.objects.create(name='Maria Juana', email='mary@jane.org')
+        match1.matchplayer_set.create(player=player1)
+        guest1 = Guest.objects.create(match=match1, inviting_player=player1, name='Bud')
+        response = c.get('/removeguest/%i/' % guest1.id)
+        self.assertEquals(response.status_code, 400)
+
+        # everything ok
+        match2 = Match.objects.create(date=datetime.now() + timedelta(days=1), place='Colombia')
+        player2 = Player.objects.create(name='Pablo Escobar', email='escobar@cocacola.org')
+        match2.matchplayer_set.create(player=player1)
+        match2.matchplayer_set.create(player=player2)
+        guest2 = Guest.objects.create(match=match2, inviting_player=player2, name='El Pibe')
+        response = c.get('/removeguest/%i/' % guest2.id, follow=True)
+        self.assertEquals(response.status_code, 200)
+
+        # guest should be removed
+        self.assertFalse(Guest.objects.filter(id=guest2.id).exists())
+
+        # emails should be sent
+        self.assertEquals(len(mail.outbox), 1)
+
+        # user should be redirected to match
+        self.assertEquals(response.context['match'], match2)
+        self.assertEquals(response.templates[0].name, 'core/match.html')
+
+
     def test_send_mail_view(self):
         """
         Test send mail view.
         """
         c = Client()
+        match_count = Match.objects.count()
         response = c.post('/sendmail/')
+
+        Player.objects.create(name='Diego Armando', email='diego@rmando.net')
+        Player.objects.create(name='O Rei', email='pele@brasil.net')
+
         self.assertTrue(response.status_code == 201 or response.status_code == 204)
+
+        if response.status_code == 201:
+            self.assertEquals(match_count + 1, Match.objects.count())
+        elif response.status_code == 204:
+            self.assertEquals(match_count, Match.objects.count())
 
 
     def test_current_player(self):
@@ -833,6 +911,46 @@ class MailerTests(TestCase):
         self.assertEquals(msg.to, [mailer.email_address(player)])
 
 
+    def test_remove_guest_message(self):
+        """
+        Test the remove guest message.
+        """
+        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
+        inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
+        guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
+
+        msg = mailer.remove_guest_message(guest, player)
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(player)])
+        self.assertTrue('Hola %s' % player.name in msg.body)
+        self.assertTrue(match.place in msg.body)
+        self.assertTrue(match_url(match, player) in msg.body)
+        self.assertTrue(inviting_player.name in msg.body)
+        self.assertTrue(guest.name in msg.body)
+
+
+    def test_send_remove_guest_mails(self):
+        """
+        Test sending guest remove messages.
+        """
+        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
+        inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
+        match.matchplayer_set.create(player=player)
+        match.matchplayer_set.create(player=inviting_player)
+        guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
+
+        mailer.send_remove_guest_mails(guest)
+        self.assertEquals(len(mail.outbox), 1)
+
+        msg = mail.outbox[0]
+        self.assertEquals(msg.subject, 'Fobal')
+        self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
+        self.assertEquals(msg.to, [mailer.email_address(player)])
+
+
     def test_status_message(self):
         """
         Status message should contain the number of players in the match and
@@ -906,9 +1024,12 @@ class UrlHelperTests(TestCase):
 
     def test_match_url(self):
         """
-        Test the match URL contains the player id as a query parameter.
+        Test the match URL contains the player id as a query parameter if set.
         """
         match = Match(id=5)
         player = Player(id=7)
         url = match_url(match, player)
         self.assertEquals(url, '/matches/5/?player_id=7')
+
+        url = match_url(match, None)
+        self.assertEquals(url, '/matches/5/')

@@ -7,7 +7,7 @@ from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
-from core.models import Match, Player, MatchPlayer
+from core.models import Match, Player, MatchPlayer, Guest
 from core import mailer, tasks
 from core.urlhelper import match_url, join_match_url, leave_match_url
 
@@ -187,6 +187,34 @@ def add_guest(request, match_id):
 
     # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
+
+
+def remove_guest(request, guest_id):
+    """
+    View for removing a guest from a match.
+    Removes the given guest from the match, and redirects to the match url.
+    Returns 404 if the match or the guest can't be foud.
+    Returns 400 if match has already been played.
+    Emails are sent to the match players.
+    """
+    # TODO: should be a RESTful delete
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
+    guest = get_object_or_404(Guest, pk=guest_id)
+
+    if datetime.now() >= guest.match.date:
+        # TODO: add proper HTML error page with a link to the next match
+        # TODO: use model signals and keep validation in one place
+        return HttpResponse(status=400, content='El partido ya fue')
+
+    guest.delete()
+
+    sent_mails = mailer.send_remove_guest_mails(guest)
+    LOGGER.info('%s uninvited %s from %s, sent %i email(s)' % (guest.inviting_player, guest, guest.match, sent_mails))
+
+    # TODO: add success/error/not-joined message and player id
+    return HttpResponseRedirect(match_url(guest.match, None))
 
 
 @csrf_exempt
