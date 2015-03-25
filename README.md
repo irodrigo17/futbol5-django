@@ -79,12 +79,12 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Send daily email notifications with the status of the next match
 - [x] Players can join or leave a match from the web
 - [x] Players can delete invited friends from the web (notify players)
+- [x] Add flash messages when joining/leaving/inviting guests
 - [ ] Emails are sent asynchronously
-- [ ] Fix next match (probably a timezone issue)
+- [ ] Emails are sent when updating models through API and Django Admin
 - [ ] Add links to RESTful API
 - [ ] Use [AngularJS](https://angularjs.org) for the frontend
-- [ ] Send mails when models are saved (so Django admin and API work)
-- [ ] Add flash messages when joining/leaving/inviting guests
+- [ ] Fix next match (probably a timezone issue)
 - [ ] Add minimum security (server generated token sent in email links instead of player id)
 - [ ] Send email notifications to joining/leaving players too, and to players inviting guests
 - [ ] Cancel matches (notify players and save stats)
