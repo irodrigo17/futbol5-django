@@ -80,8 +80,10 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Players can join or leave a match from the web
 - [x] Players can delete invited friends from the web (notify players)
 - [x] Add flash messages when joining/leaving/inviting guests
-- [ ] Convert Join / Leave links to buttons below player list
-- [ ] Remove superfluous text from web UI and make date and place a header.
+- [x] Convert Join / Leave links to buttons below player list
+- [x] Remove superfluous text from web UI and make date and place a header.
+- [x] Player ID is removed from URLs after player is stored in session.
+- [x] Encourage players to join an upcoming match if needed
 - [ ] Emails are sent asynchronously
 - [ ] Emails are sent when updating models through API and Django Admin
 - [ ] Add links to RESTful API
@@ -97,4 +99,3 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Add static code analysis (PEP8)
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
-- [ ] Encourage players to join an upcoming match if needed
