@@ -258,7 +258,7 @@ class ViewTests(TestCase):
         c = Client()
         match = Match.objects.create(date=datetime.now() + timedelta(days=1), place="La Cancha")
         player = Player.objects.create(name='Test Match View', email="test@matchview.com")
-        response = c.get('/matches/%d/' % match.id, {'player_id': player.id})
+        response = c.get('/matches/%d/' % match.id, {'player_id': player.id}, follow=True)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
         self.assertEquals(response.context['player'], player)
@@ -281,7 +281,7 @@ class ViewTests(TestCase):
         match.matchplayer_set.create(player=player2)
         guest1 = Guest.objects.create(name='Guest1', inviting_player=player1, match=match)
         guest2 = Guest.objects.create(name='Guest2', inviting_player=player2, match=match)
-        response = c.get('/matches/%d/' % match.id, {'player_id': player1.id})
+        response = c.get('/matches/%d/' % match.id, {'player_id': player1.id}, follow=True)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
         self.assertEquals(response.context['player'], player1)
@@ -300,7 +300,7 @@ class ViewTests(TestCase):
         """
         c = Client()
         match = Match.objects.create(date=datetime.now(), place="La Cancha")
-        response = c.get('/matches/%d/' % match.id, {'player_id': 12345})
+        response = c.get('/matches/%d/' % match.id, {'player_id': 12345}, follow=True)
         self.assertEquals(response.status_code, 200)
         self.assertFalse('player' in response.context)
 

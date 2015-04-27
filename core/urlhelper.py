@@ -28,7 +28,7 @@ def leave_match_url(match, player):
     return reverse('core:leave_match', args=[match.id, player.id])
 
 
-def match_url(match, player):
+def match_url(match, player = None):
     """
     Relative URL for the given match and the given player.
     """

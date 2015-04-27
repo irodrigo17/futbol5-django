@@ -81,6 +81,10 @@ def match(request, match_id):
 
     set_current_player(request, context)
 
+    if 'player_id' in request.GET:
+        # clean URL after setting current player in session
+        return HttpResponseRedirect(match_url(match))
+
     player = context.get('player', None)
     if player != None:
         if player.can_join(match):
@@ -121,9 +125,8 @@ def join_match(request, match_id, player_id):
         sent_mails = mailer.send_join_mails(match, player)
         LOGGER.info('%s joined %s, sent %i email(s)' % (player, match, sent_mails))
 
-    messages.success(request, '%s: Estás anotado para el partido!' % player.name)
+    messages.success(request, 'Estás anotado para el partido!')
 
-    # TODO: add success/error/already-joined messages and player id
     return HttpResponseRedirect(match_url(match, player))
 
 
@@ -158,9 +161,8 @@ def leave_match(request, match_id, player_id):
         sent_mails = mailer.send_leave_mails(match, player)
         LOGGER.info('%s left %s, sent %i email(s)' % (player, match, sent_mails))
 
-    messages.success(request, '%s: Te bajaste del partido, gracias por avisar!' % player.name)
+    messages.success(request, 'Te bajaste del partido, gracias por avisar!')
 
-    # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
 
 
@@ -191,9 +193,8 @@ def add_guest(request, match_id):
     sent_mails = mailer.send_invite_guest_mails(match, player, guest)
     LOGGER.info('%s invited %s to %s, sent %i email(s)' % (player, guest, match, sent_mails))
 
-    messages.success(request, '%s: Tu amigo quedó anotado!' % player.name)
+    messages.success(request, 'Tu amigo quedó anotado!')
 
-    # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(match, player))
 
 
@@ -221,9 +222,8 @@ def remove_guest(request, guest_id):
     sent_mails = mailer.send_remove_guest_mails(guest)
     LOGGER.info('%s uninvited %s from %s, sent %i email(s)' % (guest.inviting_player, guest, guest.match, sent_mails))
 
-    messages.success(request, '%s: Tu amigo no juega, gracias por avisar!' % guest.inviting_player.name)
+    messages.success(request, 'Tu amigo no juega, gracias por avisar!')
 
-    # TODO: add success/error/not-joined message and player id
     return HttpResponseRedirect(match_url(guest.match, None))
 
 

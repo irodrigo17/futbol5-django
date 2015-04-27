@@ -69,7 +69,7 @@
   <form action="addguest/" method="post">
     {% csrf_token %}
     <p>
-      <label for="guest_name_id">Invita a un amigo {{ player.name }}</label>
+      <label for="guest_name_id">Invita a un amigo</label>
       <input id="guest_name_id" type="text" name="guest" maxlength="50" placeholder="Nombre"/>
       <input type="hidden" name="inviting_player" maxlength="50" value="{{ player.id }}" />
       <input type="submit" value="Invitar" />
