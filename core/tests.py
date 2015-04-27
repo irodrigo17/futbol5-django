@@ -95,7 +95,7 @@ class PlayerTests(TestCase):
     def test_can_join(self):
         """
         can_join should be True iff player has not joined already
-        and match has not been played yet
+        and the match has not been played yet.
         """
         m1 = Match.objects.create(date=datetime.now() - timedelta(days=1))
         m2 = Match.objects.create(date=datetime.now() + timedelta(days=1))
@@ -112,6 +112,28 @@ class PlayerTests(TestCase):
         MatchPlayer.objects.create(match=m2, player=p1)
         self.assertFalse(p1.can_join(m2))
         self.assertTrue(p2.can_join(m2))
+
+
+    def test_can_leave(self):
+        """
+        can_leave should be True iff player has joined already
+        and the match has not been played yet.
+        """
+        past_match = Match.objects.create(date=datetime.now() - timedelta(days=1))
+        future_match = Match.objects.create(date=datetime.now() + timedelta(days=1))
+
+        p1 = Player.objects.create(name='Player1', email="p1@email.com")
+        p2 = Player.objects.create(name='Player2', email="p2@email.com")
+
+        self.assertFalse(p1.can_join(past_match))
+        self.assertFalse(p2.can_join(past_match))
+
+        self.assertTrue(p1.can_join(future_match))
+        self.assertTrue(p2.can_join(future_match))
+
+        MatchPlayer.objects.create(match=future_match, player=p1)
+        self.assertFalse(p1.can_join(future_match))
+        self.assertTrue(p2.can_join(future_match))
 
 
 class MatchTests(TestCase):
@@ -225,7 +247,6 @@ class ViewTests(TestCase):
         self.assertEquals(response.templates[0].name, 'core/match.html')
         self.assertFalse("<form action=\"addguest/\" method=\"post\">" in str(response.content))
         self.assertFalse("Juego!" in str(response.content))
-        self.assertFalse('can_join' in response.context)
         self.assertFalse('join_match_url' in response.context)
         self.assertFalse('leave_match_url' in response.context)
 
@@ -244,9 +265,8 @@ class ViewTests(TestCase):
         self.assertEquals(response.templates[0].name, 'core/match.html')
         self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
         self.assertTrue("Juego" in str(response.content))
-        self.assertTrue('can_join' in response.context)
         self.assertTrue('join_match_url' in response.context)
-        self.assertTrue('leave_match_url' in response.context)
+        self.assertFalse('leave_match_url' in response.context)
 
 
     def test_match_view_with_guest(self):
@@ -268,8 +288,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.templates[0].name, 'core/match.html')
         self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
         self.assertTrue("No juego" in str(response.content))
-        self.assertTrue('can_join' in response.context)
-        self.assertTrue('join_match_url' in response.context)
+        self.assertFalse('join_match_url' in response.context)
         self.assertTrue('leave_match_url' in response.context)
         self.assertTrue('removeguest/%i/' % guest1.id in str(response.content))
         self.assertFalse('removeguest/%i/' % guest2.id in str(response.content))

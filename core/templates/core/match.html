@@ -1,27 +1,20 @@
 {% include 'core/partial_site_header.html' %}
 
-<h2>Que partidazo!</h2>
-<p>Se juega el <strong>{{ match.date | date:"MATCH_DATE_FORMAT" }}</strong> en <strong>{{ match.place }}</strong></p>
+<h3>{{ match.date | date:"MATCH_DATE_FORMAT" }} en {{ match.place }}</h3>
 
-<h3>El plantel</h3>
+<h4>El plantel</h4>
 {% if match.players.count > 0 %}
   <table class="table table-striped">
     <tr>
       <th>#</th>
       <th>Nombre</th>
       <th>Fecha</th>
-      <th></th>
     </tr>
     {% for mp in match.matchplayer_set.all %}
     <tr>
       <td>{{ forloop.counter }}</td>
       <td>{{ mp.player.name }}</td>
       <td>{{ mp.join_date | date:"JOIN_DATE_FORMAT" }}</td>
-      <td>
-        {% if player != None and player == mp.player %}
-        <a href="{{ leave_match_url }}"><strong>No juego</strong></a>
-        {% endif %}
-      </td>
     </tr>
     {% endfor %}
   </table>
@@ -29,11 +22,21 @@
   <p>Todavía no se ha anotado nadie...</p>
 {% endif %}
 
-{% if player != None and can_join %}
-<p><a href="{{ join_match_url }}"><strong>Juego!</strong></a></p>
+{% if join_match_url != None %}
+<p>
+  <a href="{{ join_match_url }}">
+    <span class="label label-success">Juego</span>
+  </a>
+</p>
+{% elif leave_match_url != None %}
+<p>
+  <a href="{{ leave_match_url }}">
+    <span class="label label-danger">No juego</span>
+  </a>
+</p>
 {% endif %}
 
-<h3>Invitados</h3>
+<h4>Invitados</h4>
 {% if match.guests.count > 0 %}
   <table class="table table-striped">
     <tr>

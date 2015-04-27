@@ -83,9 +83,10 @@ def match(request, match_id):
 
     player = context.get('player', None)
     if player != None:
-        context['can_join'] = player.can_join(match)
-        context['join_match_url'] = join_match_url(match, player)
-        context['leave_match_url'] = leave_match_url(match, player)
+        if player.can_join(match):
+            context['join_match_url'] = join_match_url(match, player)
+        elif player.can_leave(match):
+            context['leave_match_url'] = leave_match_url(match, player)
 
     return render(request, 'core/match.html', context)
 

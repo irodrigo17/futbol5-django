@@ -38,7 +38,15 @@ class Player(models.Model):
         A player can join a match if he has not joined already, and if the match
         has not been played already.
         """
-        return (not match.players.filter(id=self.id).exists()) and match.date > datetime.now()
+        return (not match.players.filter(id=self.id).exists()) and (match.date > datetime.now())
+
+    def can_leave(self, match):
+        """
+        Check if the player can leave the given match.
+        A player can leave a match if he has joined and the match has not been
+        played already.
+        """
+        return (match.players.filter(id=self.id).exists()) and (match.date > datetime.now())
 
 
 
