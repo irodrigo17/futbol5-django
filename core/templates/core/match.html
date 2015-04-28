@@ -55,7 +55,9 @@
       <td>
         {% if guest.inviting_player == player %}
         {% url 'core:remove_guest' guest_id=guest.id as remove_guest_url %}
-        <a href="{{ remove_guest_url }}"><strong>No juega</strong></a>
+        <a href="{{ remove_guest_url }}" role="button" class="btn btn-xs btn-danger">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </a>
         {% endif %}
       </td>
     </tr>
@@ -73,7 +75,7 @@
       <input id="guest_name_id" type="text" name="guest" maxlength="50" placeholder="Nombre" class="form-control"/>
       <input type="hidden" name="inviting_player" maxlength="50" value="{{ player.id }}" />
     </div>
-    <button type="submit" class="btn btn-default">Invitar</button>
+    <button type="submit" class="btn btn-primary">Invitar</button>
   </form>
 {% endif %}
 
