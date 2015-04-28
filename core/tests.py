@@ -263,7 +263,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['match'], match)
         self.assertEquals(response.context['player'], player)
         self.assertEquals(response.templates[0].name, 'core/match.html')
-        self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
+        self.assertTrue("<form action=\"addguest/\" method=\"post\"" in str(response.content))
         self.assertTrue("Juego" in str(response.content))
         self.assertTrue('join_match_url' in response.context)
         self.assertFalse('leave_match_url' in response.context)
@@ -286,7 +286,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['match'], match)
         self.assertEquals(response.context['player'], player1)
         self.assertEquals(response.templates[0].name, 'core/match.html')
-        self.assertTrue("<form action=\"addguest/\" method=\"post\">" in str(response.content))
+        self.assertTrue("<form action=\"addguest/\" method=\"post\"" in str(response.content))
         self.assertTrue("No juego" in str(response.content))
         self.assertFalse('join_match_url' in response.context)
         self.assertTrue('leave_match_url' in response.context)
@@ -748,7 +748,7 @@ class TasksTests(TestCase):
         # Sunday
         match_count = Match.objects.count()
 
-        date = datetime(2015, 3, 29, 2, 0, 0, 0)
+        date = datetime(2015, 3, 29, 4, 0, 0, 0)
         match = tasks.create_match_or_send_status(date)
 
         self.assertTrue(match == None)
