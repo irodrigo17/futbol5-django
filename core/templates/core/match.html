@@ -24,14 +24,14 @@
 
 {% if join_match_url != None %}
 <p>
-  <a href="{{ join_match_url }}">
-    <span class="label label-success">Juego</span>
+  <a href="{{ join_match_url }}" class="btn btn-lg btn-block btn-success" role="button">
+    Juego
   </a>
 </p>
 {% elif leave_match_url != None %}
 <p>
-  <a href="{{ leave_match_url }}">
-    <span class="label label-danger">No juego</span>
+  <a href="{{ leave_match_url }}" class="btn btn-lg btn-block btn-danger" role="button">
+    No juego
   </a>
 </p>
 {% endif %}
@@ -66,14 +66,14 @@
 {% endif %}
 
 {% if player != None %}
-  <form action="addguest/" method="post">
+  <form action="addguest/" method="post" class="form-inline">
     {% csrf_token %}
-    <p>
+    <div class="form-group">
       <label for="guest_name_id">Invita a un amigo</label>
-      <input id="guest_name_id" type="text" name="guest" maxlength="50" placeholder="Nombre"/>
+      <input id="guest_name_id" type="text" name="guest" maxlength="50" placeholder="Nombre" class="form-control"/>
       <input type="hidden" name="inviting_player" maxlength="50" value="{{ player.id }}" />
-      <input type="submit" value="Invitar" />
-    </p>
+    </div>
+    <button type="submit" class="btn btn-default">Invitar</button>
   </form>
 {% endif %}
 
