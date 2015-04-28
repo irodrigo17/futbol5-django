@@ -84,6 +84,8 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Remove superfluous text from web UI and make date and place a header.
 - [x] Player ID is removed from URLs after player is stored in session.
 - [x] Encourage players to join an upcoming match if needed
+- [ ] Weekly matches are setup from the admin
+- [ ] Friday matches are disabled
 - [ ] Emails are sent asynchronously
 - [ ] Emails are sent when updating models through API and Django Admin
 - [ ] Add links to RESTful API
