@@ -2,6 +2,8 @@
 
 [![TravisCI](https://travis-ci.org/irodrigo17/futbol5-django.svg?branch=master)](https://travis-ci.org/irodrigo17/futbol5-django)
 [![Coverage Status](https://coveralls.io/repos/irodrigo17/futbol5-django/badge.svg?branch=master)](https://coveralls.io/r/irodrigo17/futbol5-django?branch=master)
+[![Code Issues](http://www.quantifiedcode.com/api/v1/project/aa9fc12591194a1db8f80e5e5e4d5aed/badge.svg)](http://www.quantifiedcode.com/app/project/aa9fc12591194a1db8f80e5e5e4d5aed)
+
 
 Very basic [Django](https://www.djangoproject.com) app for managing weekly soccer matches.
 
@@ -84,7 +86,10 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Remove superfluous text from web UI and make date and place a header.
 - [x] Player ID is removed from URLs after player is stored in session.
 - [x] Encourage players to join an upcoming match if needed
+- [ ] Users can see players in the web app, with # of matches and any other relevant data.
+- [ ] New players get a welcome email and are invited to the upcoming match.
 - [ ] Guest name can't be blank.
+- [ ] Players can tell the the reason when leaving matches.
 - [ ] Weekly matches are setup from the admin
 - [ ] Friday matches are disabled
 - [ ] Emails are sent asynchronously
@@ -102,3 +107,4 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Add static code analysis (PEP8)
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
+- [ ] Players can comment on matches
