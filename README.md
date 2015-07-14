@@ -86,10 +86,10 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Remove superfluous text from web UI and make date and place a header.
 - [x] Player ID is removed from URLs after player is stored in session.
 - [x] Encourage players to join an upcoming match if needed
-- [ ] Users can see players in the web app, with # of matches and any other relevant data.
-- [ ] New players get a welcome email and are invited to the upcoming match.
-- [ ] Guest name can't be blank.
-- [ ] Players can tell the the reason when leaving matches.
+- [x] Guest name can't be blank
+- [ ] Players can tell the the reason when leaving matches
+- [ ] Users can see players in the web app, with # of matches and any other relevant data
+- [ ] New players get a welcome email and are invited to the upcoming match
 - [ ] Weekly matches are setup from the admin
 - [ ] Friday matches are disabled
 - [ ] Emails are sent asynchronously
@@ -108,3 +108,4 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Save stats of players leaving matches
 - [ ] RESTful URLs and HTTP verbs
 - [ ] Players can comment on matches
+- [ ] Add polls app for making decissions (player choice can be weighted according to # of matches).
