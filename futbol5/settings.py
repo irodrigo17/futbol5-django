@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 
 import dj_database_url
+from django.contrib.messages import constants as messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -164,4 +165,11 @@ LOGGING = {
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAdminUser'],
     'PAGINATE_BY': 10,
+}
+
+
+# Override messages framework tags so it plays nicely with Bootstrap
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger'
 }
