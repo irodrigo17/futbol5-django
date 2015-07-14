@@ -188,6 +188,14 @@ def add_guest(request, match_id):
 
     player = get_object_or_404(Player, pk=request.POST['inviting_player'])
 
+    # validate guest name
+    guest_name = request.POST['guest'].strip()
+    if len(guest_name) == 0:
+        # TODO: use proper model validation
+        messages.error(request, 'Ponga el nombre de su amigo fiera')
+        return HttpResponseRedirect(match_url(match, player))
+
+    # all clear, create guest
     guest = match.guests.create(inviting_player=player, name=request.POST['guest'])
     # TODO: send emails asyncronously
     sent_mails = mailer.send_invite_guest_mails(match, player, guest)
