@@ -89,26 +89,39 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Guest name can't be blank
 - [x] Weekly matches are setup from the admin
 - [x] Friday matches are disabled
-- [ ] Update dependencies (Django 1.8)
+- [x] Update dependencies (Django 1.8)
+
+### Async emails
+
+- [ ] Emails are sent asynchronously
+- [ ] Emails are sent when updating models through API and Django Admin
+
+### RESTful API
+
+- [ ] Add links to RESTful API
+- [ ] Rebuild the frontend using the RESTful API exclusively
+
+### Other features
+
 - [ ] Users can see players in the web app, with # of matches and any other relevant data
 - [ ] New players get a welcome email and are invited to the upcoming match
 - [ ] Players can tell the the reason when leaving matches
-- [ ] Emails are sent asynchronously
-- [ ] Emails are sent when updating models through API and Django Admin
-- [ ] Add links to RESTful API
-- [ ] Use [AngularJS](https://angularjs.org) for the frontend
-- [ ] Fix next match (probably a timezone issue)
-- [ ] Add minimum security (server generated token sent in email links instead of player id)
 - [ ] Send email notifications to joining/leaving players too, and to players inviting guests
 - [ ] Cancel matches (notify players and save stats)
-- [ ] Delete player (save stats)
 - [ ] Edit match time and place (notify players)
 - [ ] Store player first and last names separately. Use first name only when appropriate (in emails for example)
-- [ ] Improve error handling
-- [ ] Add static code analysis (PEP8)
+- [ ] Delete player (save stats)
 - [ ] Save stats of players leaving matches
-- [ ] RESTful URLs and HTTP verbs
 - [ ] Players can comment on matches
 - [ ] Add polls app for making decissions (player choice can be weighted according to # of matches).
-- [ ] Split tests into different modules
 - [ ] Weekly match schedules are displayed in the home page
+
+### Tech debt
+
+- [ ] Fix next match (probably a timezone issue)
+- [ ] Add minimum security (server generated token sent in email links instead of player id)
+- [ ] Improve error handling
+- [ ] RESTful URLs and HTTP verbs
+- [ ] Add static code analysis (PEP8)
+- [ ] Split tests into different modules
+- [ ] Review TODOs in the code
