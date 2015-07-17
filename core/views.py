@@ -59,7 +59,7 @@ def index(request):
         'match_count': Match.objects.count(),
         'player_count': Player.objects.count(),
         'top_player': Player.top_player(),
-        'next_match': Match.next_match(),
+        'next_match': Match.next_match(datetime.now()),
     }
 
     set_current_player(request, context)

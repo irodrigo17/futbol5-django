@@ -10,12 +10,12 @@ Tests module for the following modules:
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.conf import settings
-from datetime import datetime, timedelta
-from urllib.parse import urljoin
 from django.core import mail
+from urllib.parse import urljoin
+import datetime
 
-from core.models import Player, Match, MatchPlayer, Guest
-from core import tasks, mailer
+from core.models import Player, Match, MatchPlayer, Guest, WeeklyMatchSchedule
+from core import tasks, mailer, datehelper
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
 
 # Model tests
@@ -81,8 +81,8 @@ class PlayerTests(TestCase):
         p1 = Player.objects.create(name='1 matches', email='1matches@email.com')
         p2 = Player.objects.create(name='2 matches', email='2matches@email.com')
 
-        m0 = Match.objects.create(date=datetime.now(), place='Here')
-        m1 = Match.objects.create(date=datetime.now(), place='Here')
+        m0 = Match.objects.create(date=datetime.datetime.now(), place='Here')
+        m1 = Match.objects.create(date=datetime.datetime.now(), place='Here')
 
         MatchPlayer.objects.create(player=p1, match=m0)
         MatchPlayer.objects.create(player=p2, match=m0)
@@ -97,8 +97,8 @@ class PlayerTests(TestCase):
         can_join should be True iff player has not joined already
         and the match has not been played yet.
         """
-        m1 = Match.objects.create(date=datetime.now() - timedelta(days=1))
-        m2 = Match.objects.create(date=datetime.now() + timedelta(days=1))
+        m1 = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(days=1))
+        m2 = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1))
 
         p1 = Player.objects.create(name='Player1', email="p1@email.com")
         p2 = Player.objects.create(name='Player2', email="p2@email.com")
@@ -119,8 +119,8 @@ class PlayerTests(TestCase):
         can_leave should be True iff player has joined already
         and the match has not been played yet.
         """
-        past_match = Match.objects.create(date=datetime.now() - timedelta(days=1))
-        future_match = Match.objects.create(date=datetime.now() + timedelta(days=1))
+        past_match = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(days=1))
+        future_match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1))
 
         p1 = Player.objects.create(name='Player1', email="p1@email.com")
         p2 = Player.objects.create(name='Player2', email="p2@email.com")
@@ -145,7 +145,7 @@ class MatchTests(TestCase):
         """
         date should be unique
         """
-        m1 = Match(date=datetime.now(), place='Maracana')
+        m1 = Match(date=datetime.datetime.now(), place='Maracana')
         m1.full_clean()
         m1.save()
 
@@ -165,7 +165,7 @@ class MatchTests(TestCase):
         """
         place should not be blank
         """
-        m = Match(date=datetime.now())
+        m = Match(date=datetime.datetime.now())
         with self.assertRaises(ValidationError):
             m.full_clean()
 
@@ -173,14 +173,14 @@ class MatchTests(TestCase):
         """
         next match should return the next updcoming match
         """
-        m1 = Match.objects.create(date=datetime.now() - timedelta(days=1), place='Here')
-        m2 = Match.objects.create(date=datetime.now() + timedelta(days=1), place='There')
-        m3 = Match.objects.create(date=datetime.now() + timedelta(days=2), place='Everywhere')
-        next_match = Match.next_match()
+        m1 = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(days=1), place='Here')
+        m2 = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1), place='There')
+        m3 = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=2), place='Everywhere')
+        next_match = Match.next_match(datetime.datetime.now())
         self.assertTrue(next_match == m2)
 
-        m4 = Match.objects.create(date=datetime.now() + timedelta(minutes=1), place='Really Close')
-        next_match = Match.next_match()
+        m4 = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(minutes=1), place='Really Close')
+        next_match = Match.next_match(datetime.datetime.now())
         self.assertTrue(next_match == m4)
 
 
@@ -188,7 +188,7 @@ class MatchTests(TestCase):
         """
         player_count should return the total number of players in the match, including guests.
         """
-        match = Match.objects.create(date=datetime.now(), place='Player Count')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Player Count')
         self.assertEquals(match.player_count(), 0)
 
         p1 = Player.objects.create(name='Player One', email='p1@email.com')
@@ -214,16 +214,17 @@ class ViewTests(TestCase):
         """
         Index view should be rendered with the proper context and template.
         """
+        now = datetime.datetime.now()
         c = Client()
         response = c.get('/')
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['player_count'], Player.objects.count())
         self.assertEquals(response.context['match_count'], Match.objects.count())
         self.assertEquals(response.context['top_player'], Player.top_player())
-        self.assertEquals(response.context['next_match'], Match.next_match())
+        self.assertEquals(response.context['next_match'], Match.next_match(now))
         self.assertEquals(response.templates[0].name, 'core/index.html')
 
-        Match.objects.create(date=datetime.now() + timedelta(days=1), place='River')
+        Match.objects.create(date=now + datetime.timedelta(days=1), place='River')
         Player.objects.create(name="Johan Sebastian Mastropiero", email='js@mastropiero.com')
 
         response = c.get('/')
@@ -231,7 +232,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.context['player_count'], Player.objects.count())
         self.assertEquals(response.context['match_count'], Match.objects.count())
         self.assertEquals(response.context['top_player'], Player.top_player())
-        self.assertEquals(response.context['next_match'], Match.next_match())
+        self.assertEquals(response.context['next_match'], Match.next_match(now))
 
 
     def test_match_view(self):
@@ -239,7 +240,7 @@ class ViewTests(TestCase):
         Match view should be rendered with the proper context and template.
         """
         c = Client()
-        match = Match.objects.create(date=datetime.now(), place="La Cancha")
+        match = Match.objects.create(date=datetime.datetime.now(), place="La Cancha")
         response = c.get('/matches/%d/' % match.id)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(response.context['match'], match)
@@ -256,7 +257,7 @@ class ViewTests(TestCase):
         Match view with a valid player should render properly.
         """
         c = Client()
-        match = Match.objects.create(date=datetime.now() + timedelta(days=1), place="La Cancha")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1), place="La Cancha")
         player = Player.objects.create(name='Test Match View', email="test@matchview.com")
         response = c.get('/matches/%d/' % match.id, {'player_id': player.id}, follow=True)
         self.assertEquals(response.status_code, 200)
@@ -274,7 +275,7 @@ class ViewTests(TestCase):
         Player should be able to remove guests invited by himself.
         """
         c = Client()
-        match = Match.objects.create(date=datetime.now() + timedelta(days=1), place="La Cancha")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1), place="La Cancha")
         player1 = Player.objects.create(name='Test Match View 1', email="test1@matchview.com")
         player2 = Player.objects.create(name='Test Match View 2', email="test2@matchview.com")
         match.matchplayer_set.create(player=player1)
@@ -299,7 +300,7 @@ class ViewTests(TestCase):
         Match view with an invalid player should render as if there were no player.
         """
         c = Client()
-        match = Match.objects.create(date=datetime.now(), place="La Cancha")
+        match = Match.objects.create(date=datetime.datetime.now(), place="La Cancha")
         response = c.get('/matches/%d/' % match.id, {'player_id': 12345}, follow=True)
         self.assertEquals(response.status_code, 200)
         self.assertFalse('player' in response.context)
@@ -318,7 +319,7 @@ class ViewTests(TestCase):
         """
         Join match view should redirect to match view and create the proper MatchPlayer.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(days=2), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=2), place="Centenario")
         player = Player.objects.create(name="Join Match View", email="join@match.com")
 
         c = Client()
@@ -337,7 +338,7 @@ class ViewTests(TestCase):
         """
         Join match view should return 404 if match or player do not exist.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(hours=2), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(hours=2), place="Centenario")
         player = Player.objects.create(name="Join Match View 404", email="join404@match.com")
 
         c = Client()
@@ -353,7 +354,7 @@ class ViewTests(TestCase):
         Join match view should redirect to match view without creating any
         MatchPlayer if it already exists, and set a proper message in the context.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(seconds=10), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(seconds=10), place="Centenario")
         player = Player.objects.create(name="Join Match View Duplicate", email="join@dup.com")
 
         c = Client()
@@ -376,7 +377,7 @@ class ViewTests(TestCase):
         """
         Join match view should fail if current date > match date.
         """
-        match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(seconds=1), place="Centenario")
         player = Player.objects.create(name="Join Match View After", email="join@dup.com")
 
         c = Client()
@@ -388,7 +389,7 @@ class ViewTests(TestCase):
         """
         Leave match view should redirect to match view and delete the proper MatchPlayer.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(days=2), place='Here')
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=2), place='Here')
         player1 = Player.objects.create(name='Leave Match 1', email='leavematch1@email.com')
         player2 = Player.objects.create(name='Leave Match 2', email='leavematch2@email.com')
         mp1 = MatchPlayer.objects.create(match=match, player=player1)
@@ -416,7 +417,7 @@ class ViewTests(TestCase):
         """
         Join match view should return 404 if match or player do not exist.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(days=2), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=2), place="Centenario")
         player = Player.objects.create(name="Leave Match 404", email="leave404@match.com")
 
         c = Client()
@@ -435,7 +436,7 @@ class ViewTests(TestCase):
         """
         Leave match view should fail if current date > match date.
         """
-        match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place="Centenario")
+        match = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(seconds=1), place="Centenario")
         player = Player.objects.create(name="Leave Match View After", email="leave@after.com")
 
         c = Client()
@@ -448,7 +449,7 @@ class ViewTests(TestCase):
         """
         Adding a guest should work as expected with correct data.
         """
-        match = Match.objects.create(date=datetime.now() + timedelta(seconds=10), place='Somewhere')
+        match = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(seconds=10), place='Somewhere')
         inviter = Player.objects.create(name='Inviter', email='inviter@email.com')
         other_player = Player.objects.create(name='Other Player', email='other@player.com')
         match.matchplayer_set.create(player=inviter)
@@ -477,7 +478,7 @@ class ViewTests(TestCase):
         Add guest view should return 400 if match has already been played.
         """
         # setup initial data
-        match = Match.objects.create(date=datetime.now() - timedelta(seconds=1), place='Somewhere')
+        match = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(seconds=1), place='Somewhere')
         inviter = Player.objects.create(name='Inviter', email='inviter@email.com')
         other_player = Player.objects.create(name='Other Player', email='other@player.com')
         match.matchplayer_set.create(player=inviter)
@@ -517,7 +518,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.status_code, 404)
 
         # match has already been played
-        match1 = Match.objects.create(date=datetime.now() - timedelta(days=1), place='Field')
+        match1 = Match.objects.create(date=datetime.datetime.now() - datetime.timedelta(days=1), place='Field')
         player1 = Player.objects.create(name='Maria Juana', email='mary@jane.org')
         match1.matchplayer_set.create(player=player1)
         guest1 = Guest.objects.create(match=match1, inviting_player=player1, name='Bud')
@@ -525,7 +526,7 @@ class ViewTests(TestCase):
         self.assertEquals(response.status_code, 400)
 
         # everything ok
-        match2 = Match.objects.create(date=datetime.now() + timedelta(days=1), place='Colombia')
+        match2 = Match.objects.create(date=datetime.datetime.now() + datetime.timedelta(days=1), place='Colombia')
         player2 = Player.objects.create(name='Pablo Escobar', email='escobar@cocacola.org')
         match2.matchplayer_set.create(player=player1)
         match2.matchplayer_set.create(player=player2)
@@ -595,83 +596,6 @@ class TasksTests(TestCase):
     TestCase subclass for the tasks module.
     """
 
-    def assert_datetime_equals(self, date1, date2, new_day):
-        """
-        Helper method for comparing two datetimes, where date2 is equal to date1
-        except for the day which should be equal to new_day.
-        """
-        self.assertEquals(date2.year, date1.year)
-        self.assertEquals(date2.month, date1.month)
-        self.assertEquals(date2.day, new_day)
-        self.assertEquals(date2.hour, date1.hour)
-        self.assertEquals(date2.minute, date1.minute)
-        self.assertEquals(date2.second, date1.second)
-        self.assertEquals(date2.microsecond, date1.microsecond)
-
-
-    def test_next_weekday(self):
-        """
-        next_weekday should return the date corresponding to the next given
-        weekday, starting from the given base date.
-        """
-        wed = datetime(2015, 2, 11, 18, 39, 59, 1234)
-
-        next_wed = tasks.next_weekday(wed, 2)
-        self.assert_datetime_equals(wed, next_wed, 11)
-
-        next_fri = tasks.next_weekday(wed, 4)
-        self.assert_datetime_equals(wed, next_fri, 13)
-
-        next_mon = tasks.next_weekday(wed, 0)
-        self.assert_datetime_equals(wed, next_mon, 16)
-
-
-    def test_set_hour(self):
-        """
-        set_hour should set the given hour to the given date and reset the rest
-        of the time components to zero.
-        """
-        date = datetime(2015, 2, 11, 18, 39, 59, 1234)
-        date = tasks.set_hour(date, 7)
-        expected_date = datetime(2015, 2, 11, 7, 0, 0, 0)
-        self.assertEquals(date, expected_date)
-
-
-    def test_find_or_create_match(self):
-        """
-        Should find or create a match for the given date and send proper emails.
-        """
-        date = datetime(2015, 3, 23, 7, 0, 0, 0)
-
-        # create match
-        Player.objects.create(name='Player One', email='p1@email.com')
-        Player.objects.create(name='Player Two', email='p2@email.com')
-        Player.objects.create(name='Player Three', email='p3@email.com')
-        Player.objects.create(name='Player Four', email='p4@email.com')
-
-        match_count = Match.objects.count()
-        match = tasks.find_or_create_match(date)
-
-        self.assertTrue(match != None)
-        self.assertEquals(match.date, date)
-        self.assertEquals(Match.objects.count(), match_count + 1)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
-        mail.outbox = []
-
-        # find match
-        p1 = Player.objects.create(name='Match Player One', email='mp1@email.com')
-        match.matchplayer_set.create(player=p1)
-        p2 = Player.objects.create(name='Match Player Two', email='mp2@email.com')
-        match.matchplayer_set.create(player=p2)
-
-        match_count = Match.objects.count()
-        match = tasks.find_or_create_match(date)
-
-        self.assertTrue(match != None)
-        self.assertEquals(match.date, date)
-        self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
-
 
     def test_create_match_or_send_status(self):
         """
@@ -685,16 +609,20 @@ class TasksTests(TestCase):
         Player.objects.create(name='Player Three', email='p3@email.com')
         Player.objects.create(name='Player Four', email='p4@email.com')
 
-        # Monday 7:15 AM
-        match_count = Match.objects.count()
+        # create schedules
+        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19, 0, 0, 0), place='Wednesday')
+        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=4, time=datetime.time(20, 0, 0, 0), place='Viernes')
 
-        date = datetime(2015, 3, 23, 7, 15, 0, 0)
+        # Monday 7:15
+        date = datetime.datetime(2015, 3, 23, 7, 15, 0, 0)
+        match_count = Match.objects.count()
         match = tasks.create_match_or_send_status(date)
 
         self.assertTrue(match != None)
-        self.assertEquals(match.date, datetime(2015, 3, 25, 19, 0, 0, 0))
+        self.assertEquals(match.date, datetime.datetime(2015, 3, 25, 19, 0, 0, 0))
+        self.assertEquals(match.place, 'Wednesday')
         self.assertEquals(Match.objects.count(), match_count + 1)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
+        self.assertEquals(len(mail.outbox), Player.objects.count(), "A new match is created, so every player should get an invite")
         mail.outbox = []
 
         # add players
@@ -704,27 +632,25 @@ class TasksTests(TestCase):
         match.matchplayer_set.create(player=p2)
 
         # Wednesday 3:00 PM
+        date = datetime.datetime(2015, 3, 25, 15, 0, 0, 0)
         match_count = Match.objects.count()
-
-        date = datetime(2015, 3, 25, 15, 0, 0, 0)
         match = tasks.create_match_or_send_status(date)
 
         self.assertTrue(match != None)
-        self.assertEquals(match.date, datetime(2015, 3, 25, 19, 0, 0, 0))
-        self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
+        self.assertEquals(match.date, datetime.datetime(2015, 3, 25, 19, 0, 0, 0))
+        self.assertEquals(Match.objects.count(), match_count, "Match should be already created")
+        self.assertEquals(len(mail.outbox), Player.objects.count(), "All players should get a status email")
         mail.outbox = []
 
         # Thursday  7:00 AM
+        date = datetime.datetime(2015, 3, 26, 7, 0, 0, 0)
         match_count = Match.objects.count()
-
-        date = datetime(2015, 3, 26, 7, 0, 0, 0)
         match = tasks.create_match_or_send_status(date)
 
         self.assertTrue(match != None)
-        self.assertEquals(match.date, datetime(2015, 3, 27, 20, 0, 0, 0))
-        self.assertEquals(Match.objects.count(), match_count + 1)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
+        self.assertEquals(match.date, datetime.datetime(2015, 3, 27, 20, 0, 0, 0), "A new match should be created for the next Friday according to the schedule")
+        self.assertEquals(Match.objects.count(), match_count + 1, "A new match should be created")
+        self.assertEquals(len(mail.outbox), Player.objects.count(), "All players should get an invite")
         mail.outbox = []
 
         # add players
@@ -734,21 +660,20 @@ class TasksTests(TestCase):
         match.matchplayer_set.create(player=fp2)
 
         # Friday  7:00 AM
+        date = datetime.datetime(2015, 3, 27, 7, 0, 0, 0)
         match_count = Match.objects.count()
-
-        date = datetime(2015, 3, 27, 7, 0, 0, 0)
         match = tasks.create_match_or_send_status(date)
 
-        self.assertTrue(match != None)
-        self.assertEquals(match.date, datetime(2015, 3, 27, 20, 0, 0, 0))
-        self.assertEquals(Match.objects.count(), match_count)
-        self.assertEquals(len(mail.outbox), Player.objects.count())
+        self.assertTrue(match != None, "Friday match should be returned")
+        self.assertEquals(match.date, datetime.datetime(2015, 3, 27, 20, 0, 0, 0), "Friday match should be returned")
+        self.assertEquals(Match.objects.count(), match_count, "Match should have been created already")
+        self.assertEquals(len(mail.outbox), Player.objects.count(), "All players should get a status email")
         mail.outbox = []
 
         # Sunday
         match_count = Match.objects.count()
 
-        date = datetime(2015, 3, 29, 4, 0, 0, 0)
+        date = datetime.datetime(2015, 3, 29, 4, 0, 0, 0)
         match = tasks.create_match_or_send_status(date)
 
         self.assertTrue(match == None)
@@ -777,7 +702,7 @@ class MailerTests(TestCase):
         Test the invite message.
         """
         player = Player.objects.create(name='George Harrison', email='george@beatles.com')
-        match = Match.objects.create(date=datetime.now(), place='Somewhere')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Somewhere')
         msg = mailer.invite_message(match, player)
         self.assertEquals(msg.subject, 'Fobal')
         self.assertEquals(msg.from_email, 'Fobal <noreply@fobal.com>')
@@ -793,7 +718,7 @@ class MailerTests(TestCase):
         """
         Test sending invite messages.
         """
-        match = Match.objects.create(date=datetime.now(), place='Here')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Here')
         player1 = Player.objects.create(name='Juan Pedro', email='jp@fasola.com')
         player2 = Player.objects.create(name='Juan Ramon', email='jr@carrasco.com')
 
@@ -810,7 +735,7 @@ class MailerTests(TestCase):
         """
         canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
         jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
-        match = Match.objects.create(date=datetime.now(), place='Centenario')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Centenario')
         match.matchplayer_set.create(player=canario)
         match.save()
         msg = mailer.leave_match_message(match, canario, jaime)
@@ -829,7 +754,7 @@ class MailerTests(TestCase):
         """
         canario = Player.objects.create(name='Washington Luna', email='canario@villaespañola.org')
         jaime = Player.objects.create(name='Jaime Roos', email='jaime@defensor.com')
-        match = Match.objects.create(date=datetime.now(), place='Centenario')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Centenario')
         match.matchplayer_set.create(player=jaime)
         match.save()
 
@@ -852,7 +777,7 @@ class MailerTests(TestCase):
         """
         mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
         rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
-        match = Match.objects.create(date=datetime.now(), place='Franzini')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Franzini')
         match.matchplayer_set.create(player=mateo)
         match.save()
 
@@ -872,7 +797,7 @@ class MailerTests(TestCase):
         """
         mateo = Player.objects.create(name='Eduardo Mateo', email='eduardo@tartamudo.org')
         rada = Player.objects.create(name='Ruben Rada', email='rada@candombe.com')
-        match = Match.objects.create(date=datetime.now(), place='Franzini')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Franzini')
         match.matchplayer_set.create(player=rada)
         match.matchplayer_set.create(player=mateo)
         match.save()
@@ -894,7 +819,7 @@ class MailerTests(TestCase):
         """
         Test the invite guest message.
         """
-        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
         guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
@@ -914,7 +839,7 @@ class MailerTests(TestCase):
         """
         Test sending guest invite messages.
         """
-        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
         match.matchplayer_set.create(player=player)
@@ -934,7 +859,7 @@ class MailerTests(TestCase):
         """
         Test the remove guest message.
         """
-        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
         guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
@@ -954,7 +879,7 @@ class MailerTests(TestCase):
         """
         Test sending guest remove messages.
         """
-        match = Match.objects.create(date=datetime.now(), place='Guest Field')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Guest Field')
         player = Player.objects.create(name='Guest Mail Receiver', email='receiver@guest.com')
         inviting_player = Player.objects.create(name='Guest Inviter', email='inviter@guest.com')
         match.matchplayer_set.create(player=player)
@@ -975,7 +900,7 @@ class MailerTests(TestCase):
         Status message should contain the number of players in the match and
         the match URL.
         """
-        match = Match.objects.create(date=datetime.now(), place='Status')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Status')
         p1 = Player.objects.create(name='Status One', email='status1@email.com')
         match.matchplayer_set.create(player=p1)
         p2 = Player.objects.create(name='Status Two', email='status2@email.com')
@@ -996,7 +921,7 @@ class MailerTests(TestCase):
         """
         Test sending status messages.
         """
-        match = Match.objects.create(date=datetime.now(), place='Status Field')
+        match = Match.objects.create(date=datetime.datetime.now(), place='Status Field')
         p1 = Player.objects.create(name='Status One', email='status1@email.com')
         p2 = Player.objects.create(name='Status Two', email='status2@email.com')
 
@@ -1052,3 +977,197 @@ class UrlHelperTests(TestCase):
 
         url = match_url(match, None)
         self.assertEquals(url, '/matches/5/')
+
+
+class DateHelperTests(TestCase):
+    """
+    Date helper module tests.
+    """
+
+    def assert_datetime_equals(self, date1, date2, new_day):
+        """
+        Helper method for comparing two datetimes, where date2 is equal to date1
+        except for the day which should be equal to new_day.
+        """
+        self.assertEquals(date2.year, date1.year)
+        self.assertEquals(date2.month, date1.month)
+        self.assertEquals(date2.day, new_day)
+        self.assertEquals(date2.hour, date1.hour)
+        self.assertEquals(date2.minute, date1.minute)
+        self.assertEquals(date2.second, date1.second)
+        self.assertEquals(date2.microsecond, date1.microsecond)
+
+    def test_next_date(self):
+        """
+        next_date should return the first date after the given datem,
+        that corresponds to the given weekday.
+        """
+        wed = datetime.datetime(2015, 2, 11, 18, 39, 59, 1234)
+
+        next_wed = datehelper.next_date(wed, 2)
+        self.assert_datetime_equals(wed, next_wed, 11)
+
+        next_fri = datehelper.next_date(wed, 4)
+        self.assert_datetime_equals(wed, next_fri, 13)
+
+        next_mon = datehelper.next_date(wed, 0)
+        self.assert_datetime_equals(wed, next_mon, 16)
+
+
+    def test_set_time(self):
+        """
+        set_time should return a new date by setting the given time to the given date.
+        """
+        date = datetime.datetime(2015, 2, 11, 18, 39, 59, 1234)
+        time = datetime.time(19, 0, 0, 0)
+        date = datehelper.set_time(date, time)
+        expected_date = datetime.datetime(2015, 2, 11, 19, 0, 0, 0)
+        self.assertEquals(date, expected_date)
+
+
+    def test_is_weekend(self):
+        """
+        is_weekend should return true only for Saturdays and Sundays
+        """
+
+        mon0am = datetime.datetime(2015, 7, 13, 0, 0, 0, 0)
+        self.assertFalse(datehelper.is_weekend(mon0am))
+
+        thu1pm = datetime.datetime(2015, 7, 16, 13, 0, 0, 0)
+        self.assertFalse(datehelper.is_weekend(thu1pm))
+
+        fri24pm = datetime.datetime(2015, 7, 17, 23, 59, 59, 999)
+        self.assertFalse(datehelper.is_weekend(fri24pm))
+
+        sat0am = datetime.datetime(2015, 7, 18, 0, 0, 0, 0)
+        self.assertTrue(datehelper.is_weekend(sat0am))
+
+        sun24pm = datetime.datetime(2015, 7, 19, 23, 59, 59, 999)
+        self.assertTrue(datehelper.is_weekend(sun24pm))
+
+
+class WeeklyMatchScheduleTests(TestCase):
+    """
+    TestCase subclass fot the WeeklyMatchSchedule model.
+    """
+
+    def test_find_next_match(self):
+        """
+        find_next_match should find the first match after the given date,
+        that corresponds to the scheduled time and weekday.
+        """
+        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+        mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
+        next_match = wed_schedule.find_next_match(mon)
+        self.assertEquals(next_match, None)
+
+        mon_match = Match.objects.create(date=mon, place='RiBer')
+        next_match = wed_schedule.find_next_match(mon)
+        self.assertEquals(next_match, None)
+
+        wed = datetime.datetime(2015, 7, 15, 19, 0, 0, 0)
+        wed_match = Match.objects.create(date=wed, place='RiBer')
+        next_match = wed_schedule.find_next_match(mon)
+        self.assertEquals(next_match, wed_match)
+
+        wed = datetime.datetime(2015, 7, 15, 18, 0, 0, 0)
+        next_match = wed_schedule.find_next_match(wed)
+        self.assertEquals(next_match, wed_match)
+
+        # TODO: handle this case properly for correctness
+        # No need to handle it right now as the mailer fires only once per day
+        # in the AM, and matches are always in the PM.
+
+        # wed = datetime.datetime(2015, 7, 15, 20, 0, 0, 0)
+        # next_match = wed_schedule.find_next_match(wed)
+        # self.assertEquals(next_match, None)
+
+        thu = datetime.datetime(2015, 7, 16, 7, 0, 0, 0)
+        next_match = wed_schedule.find_next_match(thu)
+        self.assertEquals(next_match, None)
+
+        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=4, time=datetime.time(20,0,0,0), place='River')
+        fri = datetime.datetime(2015, 7, 17, 20, 0, 0, 0)
+        fri_match = Match.objects.create(date=fri, place='RiBer')
+        sat = datetime.datetime(2015, 7, 18, 20, 0, 0, 0)
+        sat_match = Match.objects.create(date=sat, place='RiBer')
+        next_match = fri_schedule.find_next_match(thu)
+        self.assertEquals(next_match, fri_match)
+
+
+    def test_create_next_match(self):
+        """
+        create_next_match should create a match for the first date after the
+        given date, that corresponds to the scheduled time and weekday.
+        """
+        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+        mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
+        next_match = wed_schedule.find_next_match(mon)
+        self.assertEquals(next_match, None)
+
+        wed_match = wed_schedule.create_next_match(mon)
+        self.assertEquals(wed_match.date, datetime.datetime(2015, 7, 15, 19, 0, 0, 0))
+        self.assertEquals(wed_match.place, wed_schedule.place)
+
+
+    def test_next_datetime(self):
+        """
+        next_datetime should return the first date after the given date,
+        that corresponds to the scheduled time and weekday.
+        """
+
+        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+
+        mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
+
+        next_wed = wed_schedule.next_datetime(mon)
+        self.assertEquals(next_wed, datetime.datetime(2015, 7, 15, 19, 0, 0, 0))
+
+        wed_am = datetime.datetime(2015, 7, 15, 8, 0, 0, 0)
+        next_wed = wed_schedule.next_datetime(wed_am)
+        self.assertEquals(next_wed, datetime.datetime(2015, 7, 15, 19, 0, 0, 0))
+
+        fri = datetime.datetime(2015, 7, 17, 8, 0, 0, 0)
+        next_wed = wed_schedule.next_datetime(fri)
+        self.assertEquals(next_wed, datetime.datetime(2015, 7, 22, 19, 0, 0, 0))
+
+
+    def test_next_schedule(self):
+        """
+        next_weekly_match_schedule should return the first schedule after the given date.
+        """
+        wed = datetime.datetime(2015, 7, 15, 19, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(wed)
+        self.assertEquals(next_schedule, None)
+
+        mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
+        fri = datetime.datetime(2015, 7, 17, 20, 0, 0, 0)
+        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=wed.weekday(), time=wed.time(), place='River')
+        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=fri.weekday(), time=fri.time(), place='River')
+
+        next_schedule = WeeklyMatchSchedule.next_schedule(mon)
+        self.assertEquals(next_schedule, wed_schedule)
+
+        wed7am = datetime.datetime(2015, 7, 15, 7, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(wed7am)
+        self.assertEquals(next_schedule, wed_schedule)
+
+        wed6pm = datetime.datetime(2015, 7, 15, 18, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(wed6pm)
+        self.assertEquals(next_schedule, wed_schedule)
+
+        wed8pm = datetime.datetime(2015, 7, 15, 20, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(wed8pm)
+        self.assertEquals(next_schedule, fri_schedule)
+
+        thu = datetime.datetime(2015, 7, 16, 8, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(thu)
+        self.assertEquals(next_schedule, fri_schedule)
+
+        fri = datetime.datetime(2015, 7, 17, 8, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(fri)
+        self.assertEquals(next_schedule, fri_schedule)
+
+        sat = datetime.datetime(2015, 7, 18, 18, 0, 0, 0)
+        next_schedule = WeeklyMatchSchedule.next_schedule(sat)
+        self.assertEquals(next_schedule, wed_schedule)

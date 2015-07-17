@@ -3,9 +3,10 @@ Module for Django models.
 """
 
 from datetime import datetime
+from core import datehelper
 from django.db import models
-from django.core.validators import validate_email
-from django.db.models import Count
+from django.core.validators import validate_email, MinValueValidator, MaxValueValidator
+from django.db.models import Count, Q
 
 
 class Player(models.Model):
@@ -65,11 +66,11 @@ class Match(models.Model):
         return str(self.date)
 
     @classmethod
-    def next_match(cls):
+    def next_match(cls, date):
         """
-        Return the next upcoming match.
+        Return the first match after the given date.
         """
-        return Match.objects.filter(date__gte=datetime.now()).order_by('date').first()
+        return Match.objects.filter(date__gt=date).order_by('date').first()
 
     def player_count(self):
         """
@@ -112,3 +113,77 @@ class Guest(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class WeeklyMatchSchedule(models.Model):
+    """
+    Model class representing a weekly match schedule for a given weekday, time
+    and place.
+    New Match instances will be automatically created every week according to
+    the existing WeeklyMatchSchedule instances.
+    """
+
+    WEEKDAY_CHOICES = (
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+        (6, 'Sunday'),
+    )
+
+    weekday = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(6)],
+        choices=WEEKDAY_CHOICES)
+    """
+    Weekday as defined in datetime.weekday(): Monday is 0 and Sunday is 6.
+    https://docs.python.org/2/library/datetime.html#datetime.datetime.weekday
+    """
+
+    time = models.TimeField()
+    place = models.CharField(max_length=50)
+
+    def __str__(self):
+        date = self.next_datetime(datetime.now())
+        date_str = date.strftime('%A %H:%M')
+        return '{date}, {place}'.format(date=date_str, place=self.place)
+
+    def find_next_match(self, date):
+        """
+        Find the next match after the given date that corresponds to this schedule.
+        Returns None if not found.
+        """
+        next_datetime = self.next_datetime(date)
+        match = Match.objects.filter(date=next_datetime).order_by('date').first()
+        return match
+
+    def create_next_match(self, date):
+        """
+        Create a match for the first date after the given date that corresponds
+        to this schedule.
+        """
+        next_datetime = self.next_datetime(date)
+        return Match.objects.create(date=next_datetime, place=self.place)
+
+    def next_datetime(self, date):
+        """
+        Return the first date corresponding to the this weekly match schedule's
+        weekday and time, after the given date.
+        """
+        date = datehelper.next_date(date=date, weekday=self.weekday)
+        return datehelper.set_time(date=date, time=self.time)
+
+    @classmethod
+    def next_schedule(cls, date):
+        """
+        Return the next weekly match schedule from the given date.
+        """
+        query = Q(weekday__gt=date.weekday()) | (Q(weekday=date.weekday()) & Q(time__gt=date.time()))
+        schedule = WeeklyMatchSchedule.objects.filter(query).order_by('weekday').first()
+
+        if schedule == None:
+            # check next week if needed
+            schedule = WeeklyMatchSchedule.objects.order_by('weekday').first()
+
+        return schedule

@@ -87,11 +87,12 @@ There are some environment variables that need to be set for the app to work pro
 - [x] Player ID is removed from URLs after player is stored in session.
 - [x] Encourage players to join an upcoming match if needed
 - [x] Guest name can't be blank
-- [ ] Players can tell the the reason when leaving matches
-- [ ] Users can see players in the web app, with # of matches and any other relevant data
-- [ ] New players get a welcome email and are invited to the upcoming match
+- [ ] Update dependencies (Django 1.8)
 - [ ] Weekly matches are setup from the admin
 - [ ] Friday matches are disabled
+- [ ] Users can see players in the web app, with # of matches and any other relevant data
+- [ ] New players get a welcome email and are invited to the upcoming match
+- [ ] Players can tell the the reason when leaving matches
 - [ ] Emails are sent asynchronously
 - [ ] Emails are sent when updating models through API and Django Admin
 - [ ] Add links to RESTful API
@@ -109,3 +110,5 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] RESTful URLs and HTTP verbs
 - [ ] Players can comment on matches
 - [ ] Add polls app for making decissions (player choice can be weighted according to # of matches).
+- [ ] Split tests into different modules
+- [ ] Weekly match schedules are displayed in the home page
