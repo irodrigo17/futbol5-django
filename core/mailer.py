@@ -6,13 +6,36 @@ from django.core.mail import get_connection, EmailMultiAlternatives
 from django.template.loader import get_template
 from django.template import Context
 from core.urlhelper import absolute_url, join_match_url, leave_match_url, match_url
+import threading
+import logging
 
 
-def send_mails(messages):
+LOGGER = logging.getLogger(__name__)
+
+
+class EmailThread(threading.Thread):
+    """
+    Thread subclass for sending email asynchronously.
+    """
+
+    def __init__(self, messages):
+        self.messages = messages
+        threading.Thread.__init__(self)
+
+    def run (self):
+        get_connection().send_messages(self.messages)
+        LOGGER.info('Sent %i emails in background' % len(self.messages))
+
+
+def send_mails(messages, async=True):
     """
     Sends the given email messages using the default email backend.
+    The operation is asynchronous by default.
     """
-    get_connection().send_messages(messages)
+    if async == True:
+        EmailThread(messages).start()
+    else:
+        get_connection().send_messages(messages)
 
 
 def email_address(player):
@@ -46,7 +69,7 @@ def invite_message(match, player):
     return msg
 
 
-def send_invite_mails(match, players):
+def send_invite_mails(match, players, async=True):
     """
     Send emails to invite the given players to the given match.
     This is a convenience method that uses invite_message to create and send
@@ -56,7 +79,7 @@ def send_invite_mails(match, players):
     messages = []
     for player in players:
         messages.append(invite_message(match, player))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)
 
 
@@ -82,7 +105,7 @@ def leave_match_message(match, player, leaving_player):
     return msg
 
 
-def send_leave_mails(match, leaving_player):
+def send_leave_mails(match, leaving_player, async=True):
     """
     Send email notifications to all players in the given match to inform that
     the given leaving_player is not playing.
@@ -93,7 +116,7 @@ def send_leave_mails(match, leaving_player):
     for player in match.players.all():
         if player != leaving_player:
             messages.append(leave_match_message(match, player, leaving_player))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)
 
 
@@ -119,7 +142,7 @@ def join_match_message(match, player, joining_player):
     return msg
 
 
-def send_join_mails(match, joining_player):
+def send_join_mails(match, joining_player, async=True):
     """
     Send email notifications to all players in the given match to inform that
     the given joining_player has joined.
@@ -130,7 +153,7 @@ def send_join_mails(match, joining_player):
     for player in match.players.all():
         if player != joining_player:
             messages.append(join_match_message(match, player, joining_player))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)
 
 
@@ -157,7 +180,7 @@ def invite_guest_message(match, player, inviting_player, guest):
     return msg
 
 
-def send_invite_guest_mails(match, inviting_player, guest):
+def send_invite_guest_mails(match, inviting_player, guest, async=True):
     """
     Send email notifications to all players but the inviting_player in the given
     match to inform that the given inviting_player has invited the given guest.
@@ -168,7 +191,7 @@ def send_invite_guest_mails(match, inviting_player, guest):
     for player in match.players.all():
         if player != inviting_player:
             messages.append(invite_guest_message(match, player, inviting_player, guest))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)
 
 
@@ -193,7 +216,7 @@ def remove_guest_message(guest, player):
     return msg
 
 
-def send_remove_guest_mails(guest):
+def send_remove_guest_mails(guest, async=True):
     """
     Send email notifications to all match players but the inviting_player in the given
     match to inform that the given guest has been removed from the match.
@@ -204,7 +227,7 @@ def send_remove_guest_mails(guest):
     for player in guest.match.players.all():
         if player != guest.inviting_player:
             messages.append(remove_guest_message(guest, player))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)
 
 
@@ -229,7 +252,7 @@ def status_message(match, player):
     return msg
 
 
-def send_status_mails(match, players):
+def send_status_mails(match, players, async=True):
     """
     Send email notifications to all match players with the status of the match.
     Convenience method that calls status_mail and returns the number of
@@ -238,5 +261,5 @@ def send_status_mails(match, players):
     messages = []
     for player in players:
         messages.append(status_message(match, player))
-    send_mails(messages)
+    send_mails(messages, async)
     return len(messages)

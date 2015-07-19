@@ -599,7 +599,7 @@ class TasksTests(TestCase):
 
     def test_create_match_or_send_status(self):
         """
-        Test the create_match_or_send_status function.
+        Test the create_match_or_self.subjectstatus function.
         Should find or create a match for next Wednesday or next Friday and send
         proper emails on weekdays, shoud rest on weekends.
         """
@@ -724,7 +724,7 @@ class MailerTests(TestCase):
 
         players = [player1, player2]
 
-        mailer.send_invite_mails(match, players)
+        mailer.send_invite_mails(match, players, async=False)
 
         self.assertEquals(len(mail.outbox), len(players))
 
@@ -758,7 +758,7 @@ class MailerTests(TestCase):
         match.matchplayer_set.create(player=jaime)
         match.save()
 
-        msg = mailer.send_leave_mails(match, canario)
+        msg = mailer.send_leave_mails(match, canario, async=False)
         self.assertEquals(len(mail.outbox), 1, 'Should send an email to Jaime')
 
         msg = mail.outbox[0]
@@ -802,7 +802,7 @@ class MailerTests(TestCase):
         match.matchplayer_set.create(player=mateo)
         match.save()
 
-        msg = mailer.send_join_mails(match, mateo)
+        msg = mailer.send_join_mails(match, mateo, async=False)
         self.assertEquals(len(mail.outbox), 1, 'Should send an email to Rada')
 
         msg = mail.outbox[0]
@@ -846,7 +846,7 @@ class MailerTests(TestCase):
         match.matchplayer_set.create(player=inviting_player)
         guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
 
-        mailer.send_invite_guest_mails(match, inviting_player, guest)
+        mailer.send_invite_guest_mails(match, inviting_player, guest, async=False)
         self.assertEquals(len(mail.outbox), 1)
 
         msg = mail.outbox[0]
@@ -886,7 +886,7 @@ class MailerTests(TestCase):
         match.matchplayer_set.create(player=inviting_player)
         guest = Guest.objects.create(name='Guest', inviting_player=inviting_player, match=match)
 
-        mailer.send_remove_guest_mails(guest)
+        mailer.send_remove_guest_mails(guest, async=False)
         self.assertEquals(len(mail.outbox), 1)
 
         msg = mail.outbox[0]
@@ -925,8 +925,19 @@ class MailerTests(TestCase):
         p1 = Player.objects.create(name='Status One', email='status1@email.com')
         p2 = Player.objects.create(name='Status Two', email='status2@email.com')
 
-        mailer.send_status_mails(match, Player.objects.all())
+        mailer.send_status_mails(match, Player.objects.all(), async=False)
         self.assertEquals(len(mail.outbox), 2)
+
+    def test_send_mail_async(self):
+        """
+        Test async mail sending.
+        """
+        match = Match.objects.create(date=datetime.datetime.now(), place='Status Field')
+        p1 = Player.objects.create(name='Status One', email='status1@email.com')
+        p2 = Player.objects.create(name='Status Two', email='status2@email.com')
+
+        mailer.send_status_mails(match, Player.objects.all(), async=True)
+        # TODO: assert something, for now just making sure no exceptions are thrown
 
 
 # URL helper tests
