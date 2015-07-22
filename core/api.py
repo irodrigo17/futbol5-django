@@ -4,56 +4,116 @@ RESTful API module.
 
 from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
-from core.models import Player, Match, MatchPlayer, Guest
+from core.models import Player, Match, MatchPlayer, Guest, WeeklyMatchSchedule
 
 
 # Serializers define the API representation.
 
-# TODO: Add URLs to the serializers
-
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the User model.
     """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:user-detail',
+        lookup_field='id'
+    )
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'is_staff')
+        fields = ('url', 'id', 'username', 'email')
 
 
-class PlayerSerializer(serializers.ModelSerializer):
+class PlayerSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the Player model.
     """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:player-detail',
+        lookup_field='id'
+    )
     class Meta:
         model = Player
-        fields = ('id', 'name', 'email')
+        fields = ('url', 'id', 'name', 'email')
 
 
-class MatchSerializer(serializers.ModelSerializer):
+class MatchSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the Match model.
     """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:match-detail',
+        lookup_field='id'
+    )
+    players = PlayerSerializer(many=True, read_only=True)
+    guests = serializers.HyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        view_name='core:api:guest-detail',
+        lookup_field='id'
+    )
+    # TODO: guests could be expanded as players.
+    # Just have to deal with the circular reference between PlayerSerializer and GuestSerializer classes
     class Meta:
         model = Match
-        fields = ('id', 'date', 'place', 'players', 'guests')
+        fields = ('url', 'id', 'date', 'place', 'players', 'guests')
 
 
-class MatchPlayerSerializer(serializers.ModelSerializer):
+class MatchPlayerSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the MatchPlayer model.
     """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:matchplayer-detail',
+        lookup_field='id'
+    )
+    match = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:match-detail',
+        lookup_field='id'
+    )
+    player = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:player-detail',
+        lookup_field='id'
+    )
     class Meta:
         model = MatchPlayer
-        fields = ('id', 'match', 'player')
+        fields = ('url', 'id', 'match', 'player')
 
 
-class GuestSerializer(serializers.ModelSerializer):
+class GuestSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the Guest model.
     """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:guest-detail',
+        lookup_field='id'
+    )
+    match = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:match-detail',
+        lookup_field='id'
+    )
+    inviting_player = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:player-detail',
+        lookup_field='id'
+    )
     class Meta:
         model = Guest
-        fields = ('id', 'name', 'match', 'inviting_player', 'inviting_date')
+        fields = ('url', 'id', 'name', 'inviting_date', 'match', 'inviting_player')
+
+
+class WeeklyMatchScheduleSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Serializer class for the WeeklyMatchSchedule model.
+    """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:weeklymatchschedule-detail',
+        lookup_field='id'
+    )
+    class Meta:
+        model = WeeklyMatchSchedule
+        fields = ('url', 'id', 'weekday', 'time', 'place')
 
 
 # ViewSets define the view behavior.
@@ -64,6 +124,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = 'id'
 
 
 class PlayerViewSet(viewsets.ModelViewSet):
@@ -72,6 +133,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
     """
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+    lookup_field = 'id'
 
 
 class MatchViewSet(viewsets.ModelViewSet):
@@ -80,6 +142,7 @@ class MatchViewSet(viewsets.ModelViewSet):
     """
     queryset = Match.objects.all()
     serializer_class = MatchSerializer
+    lookup_field = 'id'
 
 
 class MatchPlayerViewSet(viewsets.ModelViewSet):
@@ -88,6 +151,7 @@ class MatchPlayerViewSet(viewsets.ModelViewSet):
     """
     queryset = MatchPlayer.objects.all()
     serializer_class = MatchPlayerSerializer
+    lookup_field = 'id'
 
 
 class GuestViewSet(viewsets.ModelViewSet):
@@ -96,6 +160,16 @@ class GuestViewSet(viewsets.ModelViewSet):
     """
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
+    lookup_field = 'id'
+
+
+class WeeklyMatchScheduleViewSet(viewsets.ModelViewSet):
+    """
+    View set class for the WeeklyMatchSchedule model.
+    """
+    queryset = WeeklyMatchSchedule.objects.all()
+    serializer_class = WeeklyMatchScheduleSerializer
+    lookup_field = 'id'
 
 
 # Routers provide a way of automatically determining the URL conf.
@@ -105,3 +179,4 @@ router.register(r'players', PlayerViewSet)
 router.register(r'matches', MatchViewSet)
 router.register(r'matchplayers', MatchPlayerViewSet)
 router.register(r'guests', GuestViewSet)
+router.register(r'schedules', WeeklyMatchScheduleViewSet)

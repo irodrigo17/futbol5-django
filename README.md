@@ -93,12 +93,13 @@ There are some environment variables that need to be set for the app to work pro
 
 ### Async emails
 
-- [ ] Emails are sent asynchronously
+- [x] Emails are sent asynchronously
 - [ ] Emails are sent when updating models through API and Django Admin
 
 ### RESTful API
 
-- [ ] Add links to RESTful API
+- [x] Add links to RESTful API
+- [ ] Add token based auth to RESTful API
 - [ ] Rebuild the frontend using the RESTful API exclusively
 
 ### Other features
