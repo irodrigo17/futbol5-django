@@ -35,6 +35,29 @@ class PlayerSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'name', 'email')
 
 
+class GuestSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Serializer class for the Guest model.
+    """
+    url = serializers.HyperlinkedIdentityField(
+        view_name='core:api:guest-detail',
+        lookup_field='id'
+    )
+    match = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:match-detail',
+        lookup_field='id'
+    )
+    inviting_player = serializers.HyperlinkedRelatedField(
+        read_only=True,
+        view_name='core:api:player-detail',
+        lookup_field='id'
+    )
+    class Meta:
+        model = Guest
+        fields = ('url', 'id', 'name', 'inviting_date', 'match', 'inviting_player')
+
+
 class MatchSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializer class for the Match model.
@@ -44,14 +67,7 @@ class MatchSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field='id'
     )
     players = PlayerSerializer(many=True, read_only=True)
-    guests = serializers.HyperlinkedRelatedField(
-        many=True,
-        read_only=True,
-        view_name='core:api:guest-detail',
-        lookup_field='id'
-    )
-    # TODO: guests could be expanded as players.
-    # Just have to deal with the circular reference between PlayerSerializer and GuestSerializer classes
+    guests = GuestSerializer(many=True, read_only=True)
     class Meta:
         model = Match
         fields = ('url', 'id', 'date', 'place', 'players', 'guests')
@@ -78,29 +94,6 @@ class MatchPlayerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = MatchPlayer
         fields = ('url', 'id', 'match', 'player')
-
-
-class GuestSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializer class for the Guest model.
-    """
-    url = serializers.HyperlinkedIdentityField(
-        view_name='core:api:guest-detail',
-        lookup_field='id'
-    )
-    match = serializers.HyperlinkedRelatedField(
-        read_only=True,
-        view_name='core:api:match-detail',
-        lookup_field='id'
-    )
-    inviting_player = serializers.HyperlinkedRelatedField(
-        read_only=True,
-        view_name='core:api:player-detail',
-        lookup_field='id'
-    )
-    class Meta:
-        model = Guest
-        fields = ('url', 'id', 'name', 'inviting_date', 'match', 'inviting_player')
 
 
 class WeeklyMatchScheduleSerializer(serializers.HyperlinkedModelSerializer):
