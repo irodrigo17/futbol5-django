@@ -245,7 +245,10 @@ def send_mail(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    match = tasks.create_match_or_send_status(date=datetime.now(), async=request.POST['async'])
+    async = request.POST.get('async', '') == 'true'
+    LOGGER.info('Sending daily mails (aync =  %s)' % str(async))
+
+    match = tasks.create_match_or_send_status(date=datetime.now(), async=async)
 
     if match != None:
         return HttpResponse(status=201)

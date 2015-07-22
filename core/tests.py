@@ -551,7 +551,7 @@ class ViewTests(TestCase):
         """
         c = Client()
         match_count = Match.objects.count()
-        response = c.post('/sendmail/', {'async': False})
+        response = c.post('/sendmail/')
 
         Player.objects.create(name='Diego Armando', email='diego@rmando.net')
         Player.objects.create(name='O Rei', email='pele@brasil.net')
