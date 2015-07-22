@@ -11,13 +11,14 @@ from core import mailer, datehelper
 LOGGER = logging.getLogger(__name__)
 
 
-def create_match_or_send_status(date):
+def create_match_or_send_status(date, async):
     """
     Creates next match and sends invite emails if needed, or sends status emails
     if the next match is already created.
     Matches are played according to the existing WeeklyMatchSchedule instances.
     No matches are created and no emails are sent on weekends.
     Returns the found or created match if any.
+    If async si true emails are sent asynchronously.
     """
     if datehelper.is_weekend(date):
         # nothing happens on weekends
@@ -34,10 +35,10 @@ def create_match_or_send_status(date):
                 return None
             else:
                 next_match = next_schedule.create_next_match(date)
-                sent_mails = mailer.send_invite_mails(next_match, Player.objects.all())
+                sent_mails = mailer.send_invite_mails(next_match, Player.objects.all(), async)
                 LOGGER.info('Created match for %s and sent %i invitation emails' % (next_match.date, sent_mails))
         else:
-            sent_mails = mailer.send_status_mails(next_match, Player.objects.all())
+            sent_mails = mailer.send_status_mails(next_match, Player.objects.all(), async)
             LOGGER.info('Sent %i status messages for next match: %s' % (sent_mails, next_match.date))
 
         return next_match

@@ -245,7 +245,7 @@ def send_mail(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    match = tasks.create_match_or_send_status(datetime.now())
+    match = tasks.create_match_or_send_status(date=datetime.now(), async=request.POST['async'])
 
     if match != None:
         return HttpResponse(status=201)

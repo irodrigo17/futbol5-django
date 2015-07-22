@@ -551,7 +551,7 @@ class ViewTests(TestCase):
         """
         c = Client()
         match_count = Match.objects.count()
-        response = c.post('/sendmail/')
+        response = c.post('/sendmail/', {'async': False})
 
         Player.objects.create(name='Diego Armando', email='diego@rmando.net')
         Player.objects.create(name='O Rei', email='pele@brasil.net')
@@ -596,13 +596,13 @@ class TasksTests(TestCase):
     TestCase subclass for the tasks module.
     """
 
-
     def test_create_match_or_send_status(self):
         """
         Test the create_match_or_self.subjectstatus function.
         Should find or create a match for next Wednesday or next Friday and send
         proper emails on weekdays, shoud rest on weekends.
         """
+
         # create players
         Player.objects.create(name='Player One', email='p1@email.com')
         Player.objects.create(name='Player Two', email='p2@email.com')
@@ -616,7 +616,7 @@ class TasksTests(TestCase):
         # Monday 7:15
         date = datetime.datetime(2015, 3, 23, 7, 15, 0, 0)
         match_count = Match.objects.count()
-        match = tasks.create_match_or_send_status(date)
+        match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match != None)
         self.assertEquals(match.date, datetime.datetime(2015, 3, 25, 19, 0, 0, 0))
@@ -634,7 +634,7 @@ class TasksTests(TestCase):
         # Wednesday 3:00 PM
         date = datetime.datetime(2015, 3, 25, 15, 0, 0, 0)
         match_count = Match.objects.count()
-        match = tasks.create_match_or_send_status(date)
+        match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match != None)
         self.assertEquals(match.date, datetime.datetime(2015, 3, 25, 19, 0, 0, 0))
@@ -645,7 +645,7 @@ class TasksTests(TestCase):
         # Thursday  7:00 AM
         date = datetime.datetime(2015, 3, 26, 7, 0, 0, 0)
         match_count = Match.objects.count()
-        match = tasks.create_match_or_send_status(date)
+        match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match != None)
         self.assertEquals(match.date, datetime.datetime(2015, 3, 27, 20, 0, 0, 0), "A new match should be created for the next Friday according to the schedule")
@@ -662,7 +662,7 @@ class TasksTests(TestCase):
         # Friday  7:00 AM
         date = datetime.datetime(2015, 3, 27, 7, 0, 0, 0)
         match_count = Match.objects.count()
-        match = tasks.create_match_or_send_status(date)
+        match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match != None, "Friday match should be returned")
         self.assertEquals(match.date, datetime.datetime(2015, 3, 27, 20, 0, 0, 0), "Friday match should be returned")
@@ -674,7 +674,7 @@ class TasksTests(TestCase):
         match_count = Match.objects.count()
 
         date = datetime.datetime(2015, 3, 29, 4, 0, 0, 0)
-        match = tasks.create_match_or_send_status(date)
+        match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match == None)
         self.assertEquals(Match.objects.count(), match_count)
