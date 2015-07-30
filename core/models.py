@@ -135,7 +135,8 @@ class WeeklyMatchSchedule(models.Model):
 
     weekday = models.IntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(6)],
-        choices=WEEKDAY_CHOICES)
+        choices=WEEKDAY_CHOICES,
+        unique=True)
     """
     Weekday as defined in datetime.weekday(): Monday is 0 and Sunday is 6.
     https://docs.python.org/2/library/datetime.html#datetime.datetime.weekday
@@ -143,6 +144,10 @@ class WeeklyMatchSchedule(models.Model):
 
     time = models.TimeField()
     place = models.CharField(max_length=50)
+    invite_weekday = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(6)],
+        choices=WEEKDAY_CHOICES,
+        unique=True)
 
     def __str__(self):
         date = self.next_datetime(datetime.now())
@@ -175,15 +180,9 @@ class WeeklyMatchSchedule(models.Model):
         return datehelper.set_time(date=date, time=self.time)
 
     @classmethod
-    def next_schedule(cls, date):
+    def invite_weekday_schedule(cls, date):
         """
-        Return the next weekly match schedule from the given date.
+        Find the weekly match schedule that is setup to send invites on the
+        given date's weekday.
         """
-        query = Q(weekday__gt=date.weekday()) | (Q(weekday=date.weekday()) & Q(time__gt=date.time()))
-        schedule = WeeklyMatchSchedule.objects.filter(query).order_by('weekday').first()
-
-        if schedule == None:
-            # check next week if needed
-            schedule = WeeklyMatchSchedule.objects.order_by('weekday').first()
-
-        return schedule
+        return WeeklyMatchSchedule.objects.filter(invite_weekday=date.weekday()).first()
