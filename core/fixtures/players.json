@@ -3,208 +3,32 @@
     "model": "core.Player",
     "pk": 1,
     "fields": {
-      "name": "Agustin Guerra",
-      "email": "agustingr10@gmail.com"
+      "name": "Ignacio Gmail",
+      "email": "irodrigo17@gmail.com"
     }
   },
   {
     "model": "core.Player",
     "pk": 2,
     "fields": {
-      "name": "Mauricio Martinez",
-      "email": "maumar2000@gmail.com"
+      "name": "Ignacio Globant",
+      "email": "ignacio.rodrigo@globant.com"
     }
   },
   {
     "model": "core.Player",
     "pk": 3,
     "fields": {
-      "name": "Carlos Navas",
-      "email": "carlosnavas1986@gmail.com"
+      "name": "Ignacio Toptal",
+      "email": "ignacio.rodrigo@toptal.com"
     }
   },
   {
     "model": "core.Player",
     "pk": 4,
     "fields": {
-      "name": "Esteban Hourcade Rochon",
-      "email": "hourcadeesteban@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 5,
-    "fields": {
-      "name": "Nicolas Jakubowski",
-      "email": "njakubowski@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 6,
-    "fields": {
-      "name": "Matias De Brun",
-      "email": "mdebrun@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 7,
-    "fields": {
-      "name": "Gabriel Velazquez",
-      "email": "gvelazquez@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 8,
-    "fields": {
-      "name": "Williams Olivera",
-      "email": "wolivera@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 9,
-    "fields": {
-      "name": "Diego Arena Olivera",
-      "email": "degendao@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 10,
-    "fields": {
-      "name": "Jeremias Nunez",
-      "email": "jereman_gnr@hotmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 11,
-    "fields": {
-      "name": "Sergio Oxley",
-      "email": "oxsean2@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 12,
-    "fields": {
-      "name": "Rodrigo Lopetegui",
-      "email": "rlopetegui@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 13,
-    "fields": {
-      "name": "Ignacio Rodrigo",
-      "email": "irodrigo17@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 14,
-    "fields": {
-      "name": "Agustin De Leon",
-      "email": "adeleon@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 15,
-    "fields": {
-      "name": "Nicolas Bermudez",
-      "email": "tcuentoq@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 16,
-    "fields": {
-      "name": "Federico Viñas",
-      "email": "fefo888@hotmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 17,
-    "fields": {
-      "name": "Pablo Arismendes",
-      "email": "parismendes@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 18,
-    "fields": {
-      "name": "Hernán Albano",
-      "email": "hernanalbano@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 19,
-    "fields": {
-      "name": "Damian Delgado",
-      "email": "damiandel620cds@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 20,
-    "fields": {
-      "name": "Nicolas Torres",
-      "email": "ntorres@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 21,
-    "fields": {
-      "name": "Constanza Fernández",
-      "email": "constanzafernandezn@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 22,
-    "fields": {
-      "name": "Valentin Moscone",
-      "email": "vmoscone@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 23,
-    "fields": {
-      "name": "Jorge Melgar",
-      "email": "jmelgar@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 24,
-    "fields": {
-      "name": "Diego Varangot",
-      "email": "dvarangot@codigodelsur.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 25,
-    "fields": {
-      "name": "Juan Olivera",
-      "email": "juanolio04@gmail.com"
-    }
-  },
-  {
-    "model": "core.Player",
-    "pk": 26,
-    "fields": {
-      "name": "Emiliano Barcia",
-      "email": "desde.alaska@gmail.com"
+      "name": "Ignacio Hotmail",
+      "email": "nachito_2k@hotmail.com"
     }
   }
 ]

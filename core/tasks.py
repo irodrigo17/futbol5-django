@@ -29,12 +29,12 @@ def create_match_or_send_status(date, async):
         next_match = Match.next_match(date)
         if next_match == None:
             # create next match according to the schedule if needed
-            next_schedule = WeeklyMatchSchedule.next_schedule(date)
-            if next_schedule == None:
-                LOGGER.info('No weekly match schedules found')
+            schedule = WeeklyMatchSchedule.invite_weekday_schedule(date)
+            if schedule == None:
+                LOGGER.info('No weekly match schedules setup to send invites on %s' % date)
                 return None
             else:
-                next_match = next_schedule.create_next_match(date)
+                next_match = schedule.create_next_match(date)
                 sent_mails = mailer.send_invite_mails(next_match, Player.objects.all(), async)
                 LOGGER.info('Created match for %s and sent %i invitation emails' % (next_match.date, sent_mails))
         else:

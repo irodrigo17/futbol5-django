@@ -650,10 +650,18 @@ class TasksTests(TestCase):
         Player.objects.create(name='Player Four', email='p4@email.com')
 
         # create schedules
-        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19, 0, 0, 0), place='Wednesday')
-        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=4, time=datetime.time(20, 0, 0, 0), place='Viernes')
+        wed_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=2,
+            time=datetime.time(19, 0, 0, 0),
+            place='Wednesday',
+            invite_weekday=0)
+        fri_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=4,
+            time=datetime.time(20, 0, 0, 0),
+            place='Viernes',
+            invite_weekday=3)
 
-        # Monday 7:15
+        # Monday
         date = datetime.datetime(2015, 3, 23, 7, 15, 0, 0)
         match_count = Match.objects.count()
         match = tasks.create_match_or_send_status(date=date, async=False)
@@ -688,7 +696,10 @@ class TasksTests(TestCase):
         match = tasks.create_match_or_send_status(date=date, async=False)
 
         self.assertTrue(match != None)
-        self.assertEquals(match.date, datetime.datetime(2015, 3, 27, 20, 0, 0, 0), "A new match should be created for the next Friday according to the schedule")
+        self.assertEquals(
+            match.date,
+            datetime.datetime(2015, 3, 27, 20, 0, 0, 0),
+            "A new match should be created for the next Friday according to the schedule")
         self.assertEquals(Match.objects.count(), match_count + 1, "A new match should be created")
         self.assertEquals(len(mail.outbox), Player.objects.count(), "All players should get an invite")
         mail.outbox = []
@@ -1107,7 +1118,11 @@ class WeeklyMatchScheduleTests(TestCase):
         find_next_match should find the first match after the given date,
         that corresponds to the scheduled time and weekday.
         """
-        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+        wed_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=2,
+            time=datetime.time(19,0,0,0),
+            place='River',
+            invite_weekday=0)
         mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
         next_match = wed_schedule.find_next_match(mon)
         self.assertEquals(next_match, None)
@@ -1137,7 +1152,11 @@ class WeeklyMatchScheduleTests(TestCase):
         next_match = wed_schedule.find_next_match(thu)
         self.assertEquals(next_match, None)
 
-        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=4, time=datetime.time(20,0,0,0), place='River')
+        fri_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=4,
+            time=datetime.time(20,0,0,0),
+            place='River',
+            invite_weekday=3)
         fri = datetime.datetime(2015, 7, 17, 20, 0, 0, 0)
         fri_match = Match.objects.create(date=fri, place='RiBer')
         sat = datetime.datetime(2015, 7, 18, 20, 0, 0, 0)
@@ -1151,7 +1170,11 @@ class WeeklyMatchScheduleTests(TestCase):
         create_next_match should create a match for the first date after the
         given date, that corresponds to the scheduled time and weekday.
         """
-        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+        wed_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=2,
+            time=datetime.time(19,0,0,0),
+            place='River',
+            invite_weekday=0)
         mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
         next_match = wed_schedule.find_next_match(mon)
         self.assertEquals(next_match, None)
@@ -1167,7 +1190,11 @@ class WeeklyMatchScheduleTests(TestCase):
         that corresponds to the scheduled time and weekday.
         """
 
-        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=2, time=datetime.time(19,0,0,0), place='River')
+        wed_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=2,
+            time=datetime.time(19,0,0,0),
+            place='River',
+            invite_weekday=0)
 
         mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
 
@@ -1183,42 +1210,38 @@ class WeeklyMatchScheduleTests(TestCase):
         self.assertEquals(next_wed, datetime.datetime(2015, 7, 22, 19, 0, 0, 0))
 
 
-    def test_next_schedule(self):
+    def test_invite_weekday_schedule(self):
         """
-        next_weekly_match_schedule should return the first schedule after the given date.
+        invite_weekday_schedule should return the schedule setup to send
+        invitations on the given date's weekday, if any.
         """
         wed = datetime.datetime(2015, 7, 15, 19, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(wed)
-        self.assertEquals(next_schedule, None)
+        schedule = WeeklyMatchSchedule.invite_weekday_schedule(wed)
+        self.assertEquals(schedule, None)
 
         mon = datetime.datetime(2015, 7, 13, 8, 0, 0, 0)
-        fri = datetime.datetime(2015, 7, 17, 20, 0, 0, 0)
-        wed_schedule = WeeklyMatchSchedule.objects.create(weekday=wed.weekday(), time=wed.time(), place='River')
-        fri_schedule = WeeklyMatchSchedule.objects.create(weekday=fri.weekday(), time=fri.time(), place='River')
-
-        next_schedule = WeeklyMatchSchedule.next_schedule(mon)
-        self.assertEquals(next_schedule, wed_schedule)
-
-        wed7am = datetime.datetime(2015, 7, 15, 7, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(wed7am)
-        self.assertEquals(next_schedule, wed_schedule)
-
-        wed6pm = datetime.datetime(2015, 7, 15, 18, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(wed6pm)
-        self.assertEquals(next_schedule, wed_schedule)
-
-        wed8pm = datetime.datetime(2015, 7, 15, 20, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(wed8pm)
-        self.assertEquals(next_schedule, fri_schedule)
-
         thu = datetime.datetime(2015, 7, 16, 8, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(thu)
-        self.assertEquals(next_schedule, fri_schedule)
+        fri = datetime.datetime(2015, 7, 17, 20, 0, 0, 0)
 
-        fri = datetime.datetime(2015, 7, 17, 8, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(fri)
-        self.assertEquals(next_schedule, fri_schedule)
+        wed_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=wed.weekday(),
+            time=wed.time(),
+            place='River',
+            invite_weekday=mon.weekday())
+        fri_schedule = WeeklyMatchSchedule.objects.create(
+            weekday=fri.weekday(),
+            time=fri.time(),
+            place='River',
+            invite_weekday=thu.weekday())
 
-        sat = datetime.datetime(2015, 7, 18, 18, 0, 0, 0)
-        next_schedule = WeeklyMatchSchedule.next_schedule(sat)
-        self.assertEquals(next_schedule, wed_schedule)
+        schedule = WeeklyMatchSchedule.invite_weekday_schedule(mon)
+        self.assertEquals(schedule, wed_schedule)
+
+        schedule = WeeklyMatchSchedule.invite_weekday_schedule(wed)
+        self.assertIsNone(schedule)
+
+        schedule = WeeklyMatchSchedule.invite_weekday_schedule(thu)
+        self.assertEquals(schedule, fri_schedule)
+
+        schedule = WeeklyMatchSchedule.invite_weekday_schedule(fri)
+        self.assertIsNone(schedule, schedule)
