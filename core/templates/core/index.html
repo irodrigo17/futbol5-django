@@ -15,7 +15,7 @@
 <p>
   Proximo partido:
   {% if next_match != None %}
-    <a href="{% url 'core:match' next_match.id %}">{{ next_match.date | date:"MATCH_DATE_FORMAT" }}</a>
+    <a href="{% url 'match' next_match.id %}">{{ next_match.date | date:"MATCH_DATE_FORMAT" }}</a>
   {% else %}
     -
   {% endif %}
