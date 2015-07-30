@@ -100,7 +100,7 @@ There are some environment variables that need to be set for the app to work pro
 
 - [x] Add links to RESTful API
 - [x] Add user model for authentication
-- [ ] Add basic token authentication
+- [x] Add basic token authentication
 - [ ] Set permissions for API resources
 - [ ] Add basic user management features
 - [ ] Rebuild the frontend using the RESTful API exclusively
