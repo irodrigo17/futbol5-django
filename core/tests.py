@@ -6,13 +6,14 @@ Tests module for the following modules:
 - tasks
 - urlhelper
 """
+from urllib.parse import urljoin
+import datetime
 
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.core import mail
-from urllib.parse import urljoin
-import datetime
+from django.contrib.auth.models import User
 
 from core.models import Player, Match, MatchPlayer, Guest, WeeklyMatchSchedule
 from core import tasks, mailer, datehelper
@@ -134,6 +135,45 @@ class PlayerTests(TestCase):
         MatchPlayer.objects.create(match=future_match, player=p1)
         self.assertFalse(p1.can_join(future_match))
         self.assertTrue(p2.can_join(future_match))
+
+
+    def test_create_user(self):
+        """
+        A new user with a proper username and email should be created.
+        """
+        # good username from email
+        player = Player(name='John', email='john@beatles.com')
+        user = player.create_user()
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, 'john')
+        self.assertFalse(user.has_usable_password())
+
+        # email too long, random username
+        player = Player(name='Paul', email='this.is.a.very.long.email.indeed@longemails.com')
+        user = player.create_user()
+        self.assertIsNotNone(user)
+        self.assertGreater(len(user.username), 0)
+        self.assertFalse(user.has_usable_password())
+
+        # username already exists, random username
+        player = Player(name='John', email='john@bonjovi.com')
+        user = player.create_user()
+        self.assertIsNotNone(user)
+        self.assertGreater(len(user.username), 0)
+        self.assertNotEqual(user.username, 'john')
+        self.assertFalse(user.has_usable_password())
+
+
+    def test_user_creation(self):
+        """
+        If no existing user with a matching username on player save, a new user should be created.
+        """
+        # sanity check
+        self.assertFalse(User.objects.filter(username='mick').exists())
+        player = Player.objects.create(name='Mick', email='mick@stones.com')
+        self.assertIsNotNone(player.user)
+        self.assertEqual(player.user.username, 'mick')
+        self.assertFalse(player.user.has_usable_password())
 
 
 class MatchTests(TestCase):
