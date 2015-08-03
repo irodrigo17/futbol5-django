@@ -25,14 +25,11 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DJANGO_DEBUG', False))
-TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = [os.environ.get('HOST', None)]
+TEMPLATE_DEBUG = bool(os.environ.get('DJANGO_TEMPLATE_DEBUG', False))
 
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_HTTPONLY = not DEBUG
-X_FRAME_OPTIONS = 'DENY'
+ALLOWED_HOSTS = ['fobal.herokuapp.com', 'fobal-stage.herokuapp.com']
+
 
 # Application definition
 
@@ -55,7 +52,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
 )
 
 ROOT_URLCONF = 'futbol5.urls'
@@ -69,23 +65,6 @@ WSGI_APPLICATION = 'futbol5.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config()
 }
-
-
-# Django Templates
-# https://docs.djangoproject.com/en/1.8/ref/templates/api/#the-django-template-language-for-python-programmers
-
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [os.path.join(BASE_DIR, 'templates')],
-    'OPTIONS': {
-        'loaders': [
-            ('django.template.loaders.cached.Loader', [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-            ]),
-        ],
-    },
-}]
 
 
 # Internationalization
