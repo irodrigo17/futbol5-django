@@ -18,21 +18,21 @@ def join_match_url(match, player):
     """
     Relative URL for `player` to join `match`
     """
-    return reverse('core:join_match', args=[match.id, player.id])
+    return reverse('join_match', args=[match.id, player.id])
 
 
 def leave_match_url(match, player):
     """
     Relative URL for `player` to leave `match`
     """
-    return reverse('core:leave_match', args=[match.id, player.id])
+    return reverse('leave_match', args=[match.id, player.id])
 
 
 def match_url(match, player = None):
     """
     Relative URL for the given match and the given player.
     """
-    url = reverse('core:match', args=[match.id])
+    url = reverse('match', args=[match.id])
     if player != None:
         url += '?player_id=%s' % player.id # TODO: kind of hacky
     return url

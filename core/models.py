@@ -7,6 +7,7 @@ from core import datehelper
 from django.db import models
 from django.core.validators import validate_email, MinValueValidator, MaxValueValidator
 from django.db.models import Count, Q
+from django.contrib.auth.models import User
 
 
 class Player(models.Model):
@@ -19,6 +20,7 @@ class Player(models.Model):
     name = models.CharField(max_length=50, unique=True)
     email = models.CharField(max_length=50, unique=True, db_index=True, validators=[validate_email])
     matches = models.ManyToManyField('Match', through='MatchPlayer')
+    user = models.ForeignKey(User, null=True, blank=True)
 
     def __str__(self):
         """
@@ -49,6 +51,27 @@ class Player(models.Model):
         """
         return (match.players.filter(id=self.id).exists()) and (match.date > datetime.now())
 
+    def create_user(self):
+        """
+        Create an user for the player.
+        The username is automatically generated from the player's email, or random if needed.
+        Return None if the player doesn't have a valid email.
+        """
+        # try to use first part of the email as the username
+        username = self.email.partition('@')[0]
+        # randomize username if needed
+        if len(username) == 0 or len(username) > 30 or User.objects.filter(username=username).exists():
+            username = str(datetime.now().timestamp())
+        # create user
+        return User.objects.create_user(username)
+
+    def save(self, *args, **kwargs):
+        # create user if needed
+        if self.user == None:
+            self.user = self.create_user()
+            # TODO: send welcome email
+        # save player
+        super(Player, self).save(*args, **kwargs)
 
 
 class Match(models.Model):

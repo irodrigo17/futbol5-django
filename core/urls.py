@@ -14,6 +14,6 @@ urlpatterns = patterns('',
     url(r'^matches/(?P<match_id>\d+)/addguest/$', views.add_guest, name='add_guest'),
     url(r'^removeguest/(?P<guest_id>\d+)/$', views.remove_guest, name='remove_guest'),
     url(r'^sendmail/$', views.send_mail, name='send_mail'),
-    url(r'^api/', include(api.router.urls, namespace='api')),
+    url(r'^api/', include(api.router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )
