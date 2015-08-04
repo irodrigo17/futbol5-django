@@ -9,14 +9,6 @@ from core.models import Player, Match, MatchPlayer, Guest, WeeklyMatchSchedule
 
 # Serializers define the API representation.
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializer class for the User model.
-    """
-    class Meta:
-        model = User
-        fields = ('url', 'id', 'username', 'email')
-
 
 class PlayerSerializer(serializers.HyperlinkedModelSerializer):
     """
@@ -83,13 +75,6 @@ class WeeklyMatchScheduleSerializer(serializers.HyperlinkedModelSerializer):
 
 # ViewSets define the view behavior.
 
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    View set class for the User model.
-    """
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
 
 class PlayerViewSet(viewsets.ModelViewSet):
     """
@@ -133,7 +118,6 @@ class WeeklyMatchScheduleViewSet(viewsets.ModelViewSet):
 
 # Routers provide a way of automatically determining the URL conf.
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
 router.register(r'players', PlayerViewSet)
 router.register(r'matches', MatchViewSet)
 router.register(r'matchplayers', MatchPlayerViewSet)
