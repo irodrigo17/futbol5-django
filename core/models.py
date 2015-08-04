@@ -73,6 +73,9 @@ class Player(models.Model):
         # save player
         super(Player, self).save(*args, **kwargs)
 
+    def owner(self):
+        return self.user
+
 
 class Match(models.Model):
     """
@@ -119,6 +122,9 @@ class MatchPlayer(models.Model):
     def __str__(self):
         return '%s joined %s on %s' % (self.player, self.match, self.join_date)
 
+    def owner(self):
+        return self.player.user
+
 
 class Guest(models.Model):
     """
@@ -136,6 +142,9 @@ class Guest(models.Model):
 
     def __str__(self):
         return self.name
+
+    def owner(self):
+        return self.inviting_player.user
 
 
 class WeeklyMatchSchedule(models.Model):
