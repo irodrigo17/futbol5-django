@@ -119,6 +119,7 @@ There are some environment variables that need to be set for the app to work pro
 - [ ] Players can comment on matches
 - [ ] Add polls app for making decissions (player choice can be weighted according to # of matches).
 - [ ] Weekly match schedules are displayed in the home page
+- [ ] Weather forecast is displayed for every match
 
 ### Tech debt
 
